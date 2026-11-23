@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N206 · Je multiplie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="../shared/engine.js"></script>
+<script>
+{
+const {R,pick,G,D,col}=MM;
+const q1=()=>{const a=R(12,999),b=R(2,9),p=a*b;
+ return{big:`<div class="big">${G(a)} × ${b} = ?</div>`,text:['Calcule le produit.','Combien ça fait ?'],kind:'num',ans:p,fmt:G,
+ hint:`Multiplie ${b} par les unités, puis par les dizaines, puis par les centaines. N'oublie pas les retenues.`,ok:`${G(a)} × ${b} = ${G(p)}`,
+ ex:['Tu poses le calcul en colonnes.',`Tu multiplies ${b} par chaque chiffre de ${G(a)}, de droite à gauche.`,'Tu ajoutes les retenues.',`<span class="calc">${G(a)} × ${b} = ${G(p)}</span>`],exHtml:col([['',a],['×',b]],p)}};
+/* multiplicateur à 2 chiffres : décomposition en dizaines + unités */
+const two=(a,b,ctx,unit)=>{const t=Math.floor(b/10)*10,u=b%10,p=a*b;
+ const ex=['Tu décomposes le multiplicateur : '+`${b} = ${t}${u?' + '+u:''}.`,`1. <span class="calc">${G(a)} × ${u} = ${G(a*u)}</span>`,`2. <span class="calc">${G(a)} × ${t} = ${G(a*t)}</span> (tu multiplies par ${t/10}, puis tu ajoutes un 0).`,`3. Tu additionnes : <span class="calc">${G(a*u)} + ${G(a*t)} = ${G(p)}</span>`];
+ if(!u)ex.splice(1,1);
+ return{big:`<div class="big">${G(a)} × ${b} = ?</div>`,text:ctx||['Calcule le produit.','Combien ça fait ?'],kind:'num',ans:p,fmt:G,unit,
+ hint:`${b} = ${t}${u?' + '+u:''}. Calcule ${G(a)} × ${u||t} puis ${u?G(a)+' × '+t:''}${u?', et additionne.':'.'}`,ok:`${G(a)} × ${b} = ${G(p)}`,ex,
+ exHtml:u?col([['',a*u],['+',a*t]],p):''}};
+const q2=()=>two(R(100,9999),R(11,99));
+const q2b=()=>two(R(10000,999999),R(11,99));
+const q2c=()=>{const n=R(12,45),p=R(125,890);return two(p,n,[`Une école commande ${n} tablettes.`,`Une tablette coûte ${G(p)} €.`,'Combien l\'école paye en tout ?'],'€')};
+/* phase 3 : décimal × nombre de 10 à 100 */
+const q3=(ctx)=>()=>{const c=ctx?R(101,499):pick([R(11,99),R(101,999),R(1001,4999)]),cents=c%10===0?c+R(1,9):c,a=cents/100,b=R(10,99),p=cents*b/100;
+ const txt=ctx?[`Un cahier coûte ${D(a,2)} €.`,`Tu achètes ${b} cahiers pour la classe.`,'Combien tu payes ?']:['Calcule le produit.','Attention à la virgule !'];
+ return{big:`<div class="big">${D(a)} × ${b} = ?</div>`,text:txt,kind:'num',ans:p,unit:ctx?'€':'',fmt:x=>D(x),
+ hint:'Calcule sans la virgule. Puis remets 2 chiffres après la virgule.',ok:`${D(a)} × ${b} = ${D(p)}`,
+ ex:['Tu calcules sans la virgule.',`<span class="calc">${G(cents)} × ${b} = ${G(cents*b)}</span>`,`${D(a)} a 2 chiffres après la virgule. Le résultat aussi.`,`<span class="calc">${D(a)} × ${b} = ${D(p)}</span>`],exHtml:''}};
+const MEMO1=`<p><b>Multiplier par un nombre plus petit que 10</b></p><p>1. Tu poses le calcul en colonnes.</p><p>2. Tu multiplies chaque chiffre, de droite à gauche.</p><p>3. Tu ajoutes les retenues.</p>${MM.col([['',324],['×',7]],2268)}<p>4 × 7 = 28 : j'écris 8, je retiens 2. 2 × 7 = 14, + 2 = 16 : j'écris 6, je retiens 1. 3 × 7 = 21, + 1 = 22.</p>`;
+const MEMO2=`<p><b>Multiplier par un nombre à 2 chiffres</b> (exemple : 324 × 23)</p><p>1. Tu décomposes : 23 = 20 + 3.</p><p>2. 324 × 3 = 972.</p><p>3. 324 × 20 : 324 × 2 = 648, puis tu ajoutes un 0 → 6 480.</p><p>4. Tu additionnes :</p>${MM.col([['',972],['+',6480]],7452)}`;
+const MEMO3=`<p><b>Multiplier un nombre à virgule</b> (exemple : 2,45 × 12)</p><p>1. Tu enlèves la virgule : 245 × 12 = 2 940.</p><p>2. 2,45 a 2 chiffres après la virgule.</p><p>3. Le résultat a aussi 2 chiffres après la virgule : 29,40.</p><p>Vérifie : 2,45 × 12, c'est un peu plus que 2 × 12 = 24. 29,40 a du sens.</p>`;
+MM.run({code:'N206',title:'Je multiplie',
+ desc:['Tu calcules des produits.','Tu multiplies par un nombre à 2 chiffres.'],
+ icon:'<svg viewBox="0 0 120 120" role="img" aria-label="Un signe fois"><circle cx="60" cy="60" r="56" fill="var(--mint)"/><path d="M38 38l44 44M82 38L38 82" stroke="var(--mintInk)" stroke-width="13" stroke-linecap="round"/></svg>',
+ memo:`<p><b>Multiplier par un nombre à 2 chiffres</b> (exemple : 324 × 23) :</p><p>1. Tu décomposes : 23 = 20 + 3.</p><p>2. 324 × 3 = 972.</p><p>3. 324 × 20 : tu fais 324 × 2 = 648, puis tu ajoutes un 0 → 6 480.</p><p>4. Tu additionnes : 972 + 6 480 = 7 452.</p><p><b>Avec une virgule</b> : tu calcules sans la virgule, puis tu remets autant de chiffres après la virgule.</p>`,
+ levels:[
+ {t:'Niveau 1',memo:MEMO1,s:'Multiplier par un nombre plus petit que 10',comp:'N108, phase 1',teach:'produit d\'un nombre < 1 000 par un nombre < 10.',g:[q1]},
+ {t:'Niveau 2',memo:MEMO2,s:'Multiplier par un nombre à 2 chiffres',comp:'N206, phase 2',teach:'multiplicande de 3 à 6 chiffres, multiplicateur < 100 ; explication par décomposition.',g:[q2,q2b,q2c]},
+ {t:'Niveau 3',memo:MEMO3,p3:'Q303',s:'Multiplier un nombre à virgule',comp:'Q303, phase 3',teach:'produit d\'un décimal (2 décimales au plus) par un naturel de 10 à 100.',g:[q3(false),q3(true)]}]});
+
+}
+</script>
+</body>
+</html>

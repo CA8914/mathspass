@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mes résultats · MathsPass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Applications créées par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="shared/engine.js"></script>
+<script>
+{
+const {store,esc,H,FORM_URL,SITE}=MM,$=s=>document.querySelector(s),app=$('#app');
+const LAB={CLASSEMENT:'N203',PROMOS:'Q206',LOGIQUE:'S206'};
+const code=r=>(LAB[r.c]||r.c)+(r.p?' · '+r.p:'');
+const line=r=>`${code(r)} ${r.a} · Niveau ${r.l+1} : ${r.s}/${r.m} (${r.d})`;
+function render(){const name=store.name(),log=store.log();
+ if(!name){app.innerHTML=`<div class="bar"><a class="ghost" href="index.html${H()}">← Toutes les applications</a></div><div class="box"><p>Écris d'abord ton prénom sur la page d'accueil.</p></div>`;return}
+ /* le lien du formulaire ne doit pas être trop long : on garde les parties les plus récentes */
+ let keep=log.length,url,cut=false;
+ do{const txt=`Prénom : ${name}\n`+log.slice(log.length-keep).map(line).join('\n');
+  url=FORM_URL.replace('APPLI',encodeURIComponent(SITE)).replace('PRENOM',encodeURIComponent(name)).replace('RESULTATS',encodeURIComponent(txt));
+  if(url.length>7500){keep--;cut=true}else break}while(keep>1);
+ app.innerHTML=`<div class="bar"><a class="ghost" href="index.html${H()}">← Toutes les applications</a><b>${esc(name)}</b></div>
+ <div class="box"><h1 style="font-size:34px">Les résultats de ${esc(name)}</h1><p>Toutes tes applications sont ici.</p><p>Montre cet écran à ton professeur.</p>
+ ${log.length?`<div class="scroll"><table class="rtab"><thead><tr><th>Compétence</th><th>Application</th><th>Niveau</th><th class="r">Score</th><th class="r">Date</th></tr></thead><tbody>${log.slice().reverse().map(r=>`<tr><td style="white-space:nowrap"><b>${esc(code(r))}</b></td><td>${esc(r.a)}</td><td>${r.l+1}</td><td class="r"><b>${r.s} / ${r.m}</b></td><td class="r">${esc(r.d)}</td></tr>`).join('')}</tbody></table></div>`
+  :'<div class="warn"><p>Tu n\'as pas encore terminé de niveau.</p><p>Choisis une application et termine un niveau. Ensuite, tu pourras envoyer tes résultats.</p></div>'}
+ ${log.length?`<div class="row" style="margin-top:16px"><a class="btn" target="_blank" rel="noopener" href="${esc(url)}">Envoyer à mon professeur</a><button class="btn alt" id="copy">Copier mes résultats</button></div>
+ <p class="note" style="margin-top:10px">Une page s'ouvre. Clique sur « Envoyer » en bas de la page.</p>${cut?`<p class="note">Tu as beaucoup de résultats : les ${keep} plus récents sont envoyés.</p>`:''}<div id="copymsg"></div>`:''}</div>`;
+ const c=$('#copy');if(c)c.onclick=()=>{const txt=`Prénom : ${name}\n`+log.map(line).join('\n'),m=$('#copymsg');
+  const fall=()=>{m.innerHTML=`<p>Sélectionne le texte et copie-le :</p><textarea readonly>${esc(txt)}</textarea>`;m.querySelector('textarea').select()};
+  try{navigator.clipboard.writeText(txt).then(()=>{m.innerHTML='<p class="fb ok">Tes résultats sont copiés. Tu peux les coller dans un message à ton professeur.</p>'},fall)}catch(e){fall()}}}
+render();
+}
+</script>
+</body>
+</html>

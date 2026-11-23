@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N202 · J'écris les nombres sous la dictée</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="../shared/engine.js"></script>
+<script>
+{
+const {R,pick,shuf,G,W,numK,near,clsTable,opts}=MM;
+/* explication par classes : « trois millions → 3 ; quarante-deux mille → 042 ; … » */
+function parts(n){const s=String(n),k=Math.ceil(s.length/3),p=s.padStart(k*3,'0'),NM=['','mille','millions','milliards'],out=[];
+ for(let i=0;i<k;i++){const v=+p.slice(i*3,i*3+3),c=k-1-i,w=v===0?'(rien)':W(v*Math.pow(1000,c));
+  out.push(`${c?'Classe des '+NM[c]:'Classe des unités'} : ${w} → <b>${i===0?String(v):p.slice(i*3,i*3+3)}</b>`)}
+ return out}
+const ex=n=>['Tu écris le nombre classe par classe.','Chaque classe a 3 chiffres (sauf la première à gauche). Une classe vide s\'écrit 000.',...parts(n),`Le nombre est <b>${G(n)}</b>.`];
+const qType=(a,b,z)=>()=>{const n=numK(R(a,b),z);
+ return{say:W(n),text:['Écoute le nombre.','Écris-le en chiffres.'],kind:'num',ans:n,fmt:G,
+ hint:'Écris d\'abord les milliards ou les millions, puis les mille, puis les unités. Chaque classe a 3 chiffres.',ok:`${W(n)} = ${G(n)}.`,ex:ex(n),exHtml:clsTable(n)}};
+const qPick=(a,b,z)=>()=>{const n=numK(R(a,b),z),o=opts(n,near(n,3));
+ return{say:W(n),text:['Écoute le nombre.','Choisis la bonne écriture en chiffres.'],kind:'choice',ans:n,opts:o.map(v=>({l:`<span style="font-size:28px">${G(v)}</span>`,v})),
+ hint:'Attention aux zéros ! Chaque classe a 3 chiffres.',ok:`${W(n)} = ${G(n)}.`,ex:ex(n),exHtml:clsTable(n)}};
+const MEMO1=`<p><b>Écrire un nombre jusqu'à 6 chiffres</b></p><p>1. Tu entends « mille » ? Écris d'abord le nombre de mille.</p><p>2. Après « mille », il faut toujours 3 chiffres.</p><p>3. S'il manque des chiffres, ajoute des 0.</p>${MM.clsTable(6080)}<p>six mille quatre-vingts = 6 080 (et pas 680).</p>`;
+const MEMO2=`<p><b>Écrire un nombre avec des millions</b></p><p>1. Écris d'abord le nombre de millions.</p><p>2. Après « millions », il faut toujours 6 chiffres : 3 pour les mille, 3 pour les unités.</p><p>3. Une classe vide s'écrit 000.</p>${MM.clsTable(5007030)}<p>cinq millions sept mille trente = 5 007 030.</p>`;
+const MEMO3=`<p><b>Écrire un nombre avec des milliards</b></p><p>1. Écris d'abord le nombre de milliards.</p><p>2. Après « milliards », il faut toujours 9 chiffres.</p><p>3. Une classe vide s'écrit 000.</p>${MM.clsTable(12000450006)}<p>douze milliards quatre cent cinquante mille six = 12 000 450 006.</p>`;
+MM.run({code:'N202',title:'J\'écris les nombres sous la dictée',
+ desc:['Tu écoutes un nombre.','Tu l\'écris en chiffres.','Tu peux aussi lire le nombre en lettres.'],
+ icon:'<svg viewBox="0 0 120 120" role="img" aria-label="Un haut-parleur et un nombre"><circle cx="60" cy="60" r="56" fill="var(--peach)"/><path d="M24 48h14l18-14v52L38 72H24z" fill="var(--coral)"/><path d="M66 46a20 20 0 0 1 0 28M76 36a34 34 0 0 1 0 48" fill="none" stroke="var(--coral)" stroke-width="6" stroke-linecap="round"/><rect x="60" y="86" width="50" height="22" rx="7" fill="var(--card)" stroke="var(--bag)" stroke-width="3"/><text x="85" y="102" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="Atkinson Hyperlegible,Verdana,sans-serif">5 007</text></svg>',
+ memo:`<p>Pour écrire un grand nombre :</p><p>1. Écoute bien les mots <b>milliards</b>, <b>millions</b> et <b>mille</b>.</p><p>2. Écris le nombre classe par classe.</p><p>3. Chaque classe a 3 chiffres. S'il manque des chiffres, tu ajoutes des 0.</p>${clsTable(5007030)}<p>cinq millions sept mille trente = 5 007 030.</p>`,
+ teach:'Le bouton « Écouter » utilise la voix de l\'ordinateur ou de la tablette (son nécessaire). Le bouton « Voir en lettres » montre le nombre écrit : utile sans son, ou pour aider.',
+ levels:[
+ {t:'Niveau 1',memo:MEMO1,s:'Les nombres de 3 à 6 chiffres',comp:'N102, phase 1',teach:'écrire sous la dictée des nombres de 3 à 6 chiffres.',g:[qType(3,6,.25),qType(4,6,.35),qPick(4,6,.35)]},
+ {t:'Niveau 2',memo:MEMO2,s:'Les nombres de 7 à 9 chiffres',comp:'N202, phase 2',teach:'écrire sous la dictée des nombres de 7 à 9 chiffres, avec des zéros intercalés.',g:[qType(7,9,.3),qType(7,9,.45),qPick(7,9,.4)]},
+ {t:'Niveau 3',memo:MEMO3,s:'Les milliards : 10 à 12 chiffres',comp:'dépassement',teach:'écrire sous la dictée des nombres jusqu\'aux centaines de milliards.',g:[qType(10,12,.35),qType(10,12,.5),qPick(10,12,.45)]}]});
+
+}
+</script>
+</body>
+</html>

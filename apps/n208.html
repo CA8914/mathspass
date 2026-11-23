@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N208 · Je choisis la bonne opération</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="../shared/engine.js"></script>
+<script>
+{
+const {R,pick,shuf,G,D,col}=MM;
+const OPN={'+':'une addition','−':'une soustraction','×':'une multiplication',':':'une division'};
+const WHY={'+':'Tu cherches un total : « en tout », « maintenant », « ensemble ». Tu fais une addition.',
+ '−':'Tu cherches ce qui reste, ou une différence. Tu fais une soustraction.',
+ '×':'Tu as plusieurs fois la même quantité. Tu fais une multiplication.',
+ ':':'Tu partages en parts égales, ou tu fais des groupes. Tu fais une division.'};
+/* contextes : [opération, (a,b)=>texte, unité] */
+const CTX={
+ '+':[(a,b)=>[`Dans la bibliothèque de l'école, il y a ${G(a)} livres.`,`L'école achète ${G(b)} nouveaux livres.`,'Combien de livres il y a maintenant ?'],
+  (a,b)=>[`Tu as ${G(a)} € sur ton compte.`,`Pour ton anniversaire, tu reçois ${G(b)} €.`,'Combien d\'argent tu as maintenant ?'],
+  (a,b)=>[`Le matin, ${G(a)} personnes visitent le musée.`,`L'après-midi, ${G(b)} personnes visitent le musée.`,'Combien de personnes en tout dans la journée ?']],
+ '−':[(a,b)=>[`Tu as ${G(a)} € sur ton compte.`,`Tu achètes un vélo à ${G(b)} €.`,'Combien d\'argent il te reste ?'],
+  (a,b)=>[`Un magasin a ${G(a)} cahiers.`,`Il vend ${G(b)} cahiers.`,'Combien de cahiers il reste ?'],
+  (a,b)=>[`Ton livre a ${G(a)} pages.`,`Tu as déjà lu ${G(b)} pages.`,'Combien de pages il te reste à lire ?']],
+ '×':[(a,b)=>[`Une boîte contient ${G(a)} crayons.`,`L'école achète ${G(b)} boîtes.`,'Combien de crayons en tout ?'],
+  (a,b)=>[`Une place de concert coûte ${G(a)} €.`,`Tu achètes ${G(b)} places.`,'Combien tu payes ?'],
+  (a,b)=>[`Un bus a ${G(a)} places.`,`L'école loue ${G(b)} bus.`,'Combien de places en tout ?']],
+ ':':[(a,b)=>[`${G(a)} bonbons sont partagés entre ${G(b)} enfants.`,'Chaque enfant reçoit la même chose.','Combien de bonbons reçoit chaque enfant ?'],
+  (a,b)=>[`${G(a)} élèves partent en excursion.`,`On fait des groupes de ${G(b)} élèves.`,'Combien de groupes on fait ?'],
+  (a,b)=>[`Une télévision coûte ${G(a)} €.`,`Tu payes en ${G(b)} fois, chaque fois la même somme.`,'Combien tu payes chaque fois ?']]};
+const CTX3={
+ '+':[(a,b)=>[`L'an passé, un parc d'attractions a eu ${G(a)} visiteurs.`,`Cette année, il a ${G(b)} visiteurs de plus.`,'Combien de visiteurs cette année ?']],
+ '−':[(a,b)=>[`Une ville a ${G(a)} habitants.`,`${G(b)} habitants ont plus de 65 ans.`,'Combien d\'habitants ont 65 ans ou moins ?']],
+ '×':[(a,b)=>[`Une usine fabrique ${G(a)} bouteilles par jour.`,`Elle travaille ${G(b)} jours.`,'Combien de bouteilles elle fabrique ?']],
+ ':':[(a,b)=>[`Une association a ${G(a)} €.`,`Elle partage cet argent entre ${G(b)} écoles. Chaque école reçoit la même somme.`,'Combien reçoit chaque école ?'],
+  (a,b)=>[`${G(a)} spectateurs sont répartis dans ${G(b)} tribunes.`,'Chaque tribune a le même nombre de spectateurs.','Combien de spectateurs dans chaque tribune ?']]};
+const ctx=(op,lv)=>pick((lv===2?CTX3:CTX)[op]);
+const calc=(op,a,b)=>op==='+'?a+b:op==='−'?a-b:op==='×'?a*b:a/b;
+/* nombres selon le niveau */
+function nums(op,lv){
+ if(lv===0){if(op==='+')return[R(100,800),R(20,199)];const a=R(200,999);return[a,R(20,a-50)]}
+ if(lv===1){if(op==='+')return[R(1000,8000),R(100,1999)];if(op==='−'){const a=R(1200,9999);return[a,R(150,a-200)]}
+  if(op==='×')return[R(12,250),R(3,30)];const b=R(2,9),q=R(12,150);return[b*q,b]}
+ if(op===':'){const b=R(2,9),q=R(1200,99999);return[b*q,b]}if(op==='×')return[R(120,4500),R(12,99)];if(op==='+')return[R(20000,500000),R(5000,99999)];const a=R(50000,900000);return[a,R(10000,a-5000)]}
+const qOp=(ops,lv)=>()=>{const op=pick(ops),[a,b]=nums(op,lv),t=ctx(op,lv)(a,b),r=calc(op,a,b);
+ return{text:[...t.slice(0,-1),`Question : ${t[t.length-1]}`,'Quelle opération tu fais ?'],kind:'choice',ans:op,
+ opts:['+','−','×',':'].filter(o=>ops.includes(o)||lv>0).map(o=>({l:`<big>${o}</big><small>${OPN[o]}</small>`,v:o})),
+ hint:'Lis bien la question. Cherches-tu un total, un reste, plusieurs fois la même chose, ou un partage ?',ok:`${WHY[op]} <span class="calc">${G(a)} ${op} ${G(b)} = ${G(r)}</span>`,
+ ex:[WHY[op],`Le calcul : <span class="calc">${G(a)} ${op} ${G(b)} = ${G(r)}</span>`]}};
+const qCalc=(ops,lv)=>()=>{const op=pick(ops),[a,b]=nums(op,lv),t=ctx(op,lv)(a,b),r=calc(op,a,b);
+ return{text:t,kind:'num',ans:r,fmt:G,hint:'D\'abord, choisis l\'opération : +, −, × ou :. Ensuite, calcule.',ok:`<span class="calc">${G(a)} ${op} ${G(b)} = ${G(r)}</span>`,
+ ex:[WHY[op],`<span class="calc">${G(a)} ${op} ${G(b)} = ${G(r)}</span>`,`La réponse est ${G(r)}.`],exHtml:op==='+'?col([['',a],['+',b]],r):op==='−'?col([['',a],['−',b]],r):''}};
+/* phase 3 : proportionnalité directe */
+const qProp=()=>{const it=pick([['places de cinéma','€'],['kilos de pommes','€'],['tickets de bus','€'],['cahiers','€']]),u=pick([R(2,15),R(2,9)*2]),a=R(2,6);let b;do{b=R(3,12)}while(b===a);
+ const pa=u*a,pb=u*b;
+ return{text:[`${a} ${it[0]} coûtent ${G(pa)} €.`,'Le prix est le même pour chaque unité.',`Combien coûtent ${b} ${it[0]} ?`],kind:'num',ans:pb,unit:'€',fmt:x=>G(x)+' €',
+ hint:`Calcule d'abord le prix pour 1 : ${G(pa)} : ${a}.`,ok:`1 coûte ${G(u)} €. ${b} × ${G(u)} = ${G(pb)} €.`,
+ ex:['Tu cherches d\'abord le prix pour 1. Tu fais une division.',`<span class="calc">${G(pa)} : ${a} = ${G(u)}</span> → 1 coûte ${G(u)} €.`,`Puis tu multiplies par ${b}. <span class="calc">${b} × ${G(u)} = ${G(pb)}</span>`,`${b} ${it[0]} coûtent ${G(pb)} €.`]}};
+const MEMO1=`<table class="memo-t"><tr><td>+ addition</td><td>On ajoute : « en tout », « maintenant », « ensemble », « il reçoit ».</td></tr><tr><td>− soustraction</td><td>On enlève : « il reste », « il dépense », « il vend », « combien de plus que ».</td></tr></table>`;
+const MEMO2=`<table class="memo-t"><tr><td>+ addition</td><td>« en tout », « maintenant », « ensemble ».</td></tr><tr><td>− soustraction</td><td>« il reste », « de moins », « la différence ».</td></tr><tr><td>× multiplication</td><td>Plusieurs fois la même quantité : 5 boîtes de 12 crayons → 5 × 12.</td></tr><tr><td>: division</td><td>Partager en parts égales, faire des groupes, « chacun » : 60 bonbons pour 4 enfants → 60 : 4.</td></tr></table>`;
+const MEMO3=`<p><b>Diviser un grand nombre par un nombre plus petit que 10</b> (exemple : 7 254 : 6)</p><p>1. 7 : 6 = 1, il reste 1.</p><p>2. Avec le chiffre suivant : 12 : 6 = 2, il reste 0.</p><p>3. 5 : 6 = 0, il reste 5.</p><p>4. 54 : 6 = 9, il reste 0.</p><p>Résultat : 1 209. Vérifie : 1 209 × 6 = 7 254.</p><p style="margin-top:10px"><b>Le prix pour 1</b> (proportionnalité) :</p><p>3 tickets coûtent 12 €. 1 ticket coûte 12 : 3 = 4 €. 7 tickets coûtent 7 × 4 = 28 €.</p>`;
+MM.run({code:'N208',title:'Je choisis la bonne opération',
+ desc:['Tu lis un petit problème.','Tu choisis l\'opération : +, −, × ou :.','Tu calcules la réponse.'],
+ icon:'<svg viewBox="0 0 120 120" role="img" aria-label="Les 4 opérations"><circle cx="60" cy="60" r="56" fill="var(--lav)"/><g stroke="var(--bag)" stroke-width="7" stroke-linecap="round"><path d="M38 26v24M26 38h24M70 38h24M28 72l20 20M48 72L28 92M70 82h24"/></g><circle cx="82" cy="72" r="4" fill="var(--bag)"/><circle cx="82" cy="92" r="4" fill="var(--bag)"/></svg>',
+ memo:`<table class="memo-t"><tr><td>+ addition</td><td>« en tout », « maintenant », « ensemble », « de plus » (on ajoute).</td></tr><tr><td>− soustraction</td><td>« il reste », « de moins », « la différence », « combien de plus que ».</td></tr><tr><td>× multiplication</td><td>Plusieurs fois la même quantité : 5 boîtes de 12 crayons.</td></tr><tr><td>: division</td><td>Partager en parts égales, faire des groupes, « chacun ».</td></tr><tr><td>Prix pour 1</td><td>3 tickets coûtent 12 € → 1 ticket coûte 12 : 3 = 4 €.</td></tr></table>`,
+ levels:[
+ {t:'Niveau 1',memo:MEMO1,s:'Addition ou soustraction ?',comp:'N105, N106, phase 1',teach:'problèmes simples d\'addition et de soustraction, nombres < 1 000.',g:[qOp(['+','−'],0),qCalc(['+','−'],0)]},
+ {t:'Niveau 2',memo:MEMO2,s:'Les 4 opérations',comp:'N208, phase 2',teach:'choisir l\'opération adéquate parmi +, −, ×, : puis calculer.',g:[qOp(['+','−','×',':'],1),qCalc(['+','−','×',':'],1)]},
+ {t:'Niveau 3',memo:MEMO3,p3:'N301 · Q306',s:'Grandes divisions et prix pour 1',comp:'N301, Q306, phase 3',teach:'divisions de grands nombres (dividende jusqu\'à 6 chiffres, diviseur < 10) et proportionnalité directe (passage par l\'unité).',g:[qOp(['+','−','×',':'],2),qCalc([':'],2),qProp]}]});
+
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N203 · Je compare les nombres</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="../shared/engine.js"></script>
+<script>
+{
+const {R,pick,shuf,G,numK,numLine}=MM;
+const SW={'<':'est plus petit que','>':'est plus grand que','=':'est égal à'};
+const hs=s=>s.replace('<','&lt;').replace('>','&gt;');
+const sg=(a,b)=>a<b?'<':a>b?'>':'=';
+const OPTS=['<','=','>'].map(s=>({l:`<big>${hs(s)}</big><small>${SW[s]}</small>`,v:s}));
+const disp=(a,b)=>`<div class="vs"><span class="n">${G(a)}</span><span class="q">?</span><span class="n">${G(b)}</span></div>`;
+function why(a,b){const A=String(a),B=String(b);
+ if(a===b)return['Les 2 nombres ont les mêmes chiffres, à la même place.','Ils sont égaux.'];
+ if(A.length!==B.length)return[`${G(a)} a ${A.length} chiffres. ${G(b)} a ${B.length} chiffres.`,'Le nombre qui a le plus de chiffres est le plus grand.'];
+ let i=0;while(A[i]===B[i])i++;
+ return['Les 2 nombres ont le même nombre de chiffres.','Tu compares les chiffres de gauche à droite.',`Le premier chiffre différent : ${A[i]} et ${B[i]}. ${A[i]} ${SW[sg(+A[i],+B[i])]} ${B[i]}.`]}
+/* deux nombres proches : un chiffre change, ou un chiffre en plus */
+function pair(k){const a=numK(k,.2);let b;const r=Math.random();
+ if(r<.12)b=a;
+ else if(r<.32){b=numK(k+pick([-1,1]),.2)}
+ else{const s=[...String(a)],i=R(0,s.length-1);let d;do{d=String(R(i?0:1,9))}while(d===s[i]);s[i]=d;b=+s.join('')}
+ return Math.random()<.5?[a,b]:[b,a]}
+const qNat=(lo,hi)=>()=>{const[a,b]=pair(R(lo,hi)),ans=sg(a,b);
+ return{big:disp(a,b),text:['Compare les 2 nombres.','Quel signe faut-il mettre au milieu ?'],kind:'choice',ans,opts:OPTS,
+ hint:'Compte d\'abord les chiffres de chaque nombre.',ok:`${G(a)} ${hs(ans)} ${G(b)} : ${G(a)} ${SW[ans]} ${G(b)}.`,
+ ex:[...why(a,b),`Donc ${G(a)} ${hs(ans)} ${G(b)}.`,ans==='='?'':'Astuce : la pointe du signe montre le plus petit nombre.'].filter(Boolean)}};
+/* phase 3 : entiers de −100 à 100 */
+const qZ=()=>{let a=R(-100,100),b;const r=Math.random();
+ if(r<.35){a=-R(1,100);b=-R(1,100)}else if(r<.6){b=-a||R(1,50)}else if(r<.7)b=a;else b=R(-100,100);
+ const ans=sg(a,b),f=v=>v<0?'−'+(-v):String(v);
+ const ex=a===b?['Les 2 nombres sont les mêmes.']:a<0&&b<0?['Les 2 nombres sont négatifs (avec −).','Avec les nombres négatifs, attention : plus le nombre est loin de 0, plus il est petit.',`${f(a)} est à ${-a} de 0. ${f(b)} est à ${-b} de 0.`]
+  :(a<0)!==(b<0)?['Un nombre négatif (avec −) est toujours plus petit qu\'un nombre positif.']:['Les 2 nombres sont positifs. Tu compares comme d\'habitude.'];
+ return{big:`<div class="vs"><span class="n">${f(a)}</span><span class="q">?</span><span class="n">${f(b)}</span></div>`,text:['Compare les 2 nombres.','Quel signe faut-il mettre au milieu ?'],kind:'choice',ans,opts:OPTS,
+ hint:'Imagine une droite graduée. Le nombre le plus à droite est le plus grand.',ok:`${f(a)} ${hs(ans)} ${f(b)}.`,
+ ex:[...ex,'Sur la droite graduée, le nombre le plus à droite est le plus grand.',`Donc ${f(a)} ${hs(ans)} ${f(b)}.`],exHtml:numLine(a,b)}};
+const MEMO1=`<table class="memo-t"><tr><td>&lt;</td><td>« est plus petit que ». 3 &lt; 8</td></tr><tr><td>&gt;</td><td>« est plus grand que ». 8 &gt; 3</td></tr><tr><td>=</td><td>« est égal à ». 5 = 5</td></tr><tr><td>Astuce</td><td>La pointe du signe montre le plus petit nombre.</td></tr></table><p style="margin-top:10px"><b>Méthode :</b></p><p>1. Tu comptes les chiffres. Plus de chiffres = plus grand.</p><p>2. Même nombre de chiffres ? Tu compares de gauche à droite.</p><p>Exemple : 45 801 &lt; 45 810, car 0 &lt; 1 au rang des dizaines.</p>`;
+const MEMO2=`<table class="memo-t"><tr><td>&lt;</td><td>« est plus petit que »</td></tr><tr><td>&gt;</td><td>« est plus grand que »</td></tr><tr><td>=</td><td>« est égal à »</td></tr></table><p style="margin-top:10px"><b>Les grands nombres :</b></p><p>1. Tu comptes les chiffres. 12 540 300 (8 chiffres) &gt; 9 999 999 (7 chiffres).</p><p>2. Même nombre de chiffres ? Tu compares de gauche à droite, classe par classe.</p><p>Exemple : 12 540 300 &gt; 12 504 300, car 4 &gt; 0 au rang des dizaines de mille.</p>`;
+const MEMO3=`<p><b>Les nombres avec − (nombres négatifs)</b></p><p>1. Un nombre négatif est plus petit que 0.</p><p>2. Un nombre négatif est plus petit qu'un nombre positif : −3 &lt; 2.</p><p>3. Entre 2 nombres négatifs : le plus loin de 0 est le plus petit. −20 &lt; −5.</p><p>Sur la droite graduée, le plus à droite est le plus grand.</p>${MM.numLine(-20,-5)}`;
+MM.run({code:'N203',title:'Je compare les nombres',
+ desc:['Tu compares 2 nombres.','Tu choisis le bon signe : &lt;, &gt; ou =.'],
+ icon:'<svg viewBox="0 0 120 120" role="img" aria-label="Les signes plus petit et plus grand"><circle cx="60" cy="60" r="56" fill="var(--mint)"/><path d="M48 38L24 60l24 22M72 38l24 22-24 22" fill="none" stroke="var(--mintInk)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ memo:`<table class="memo-t"><tr><td>&lt;</td><td>« est plus petit que ». Exemple : 3 &lt; 8</td></tr><tr><td>&gt;</td><td>« est plus grand que ». Exemple : 8 &gt; 3</td></tr><tr><td>=</td><td>« est égal à ». Exemple : 5 = 5</td></tr><tr><td>Astuce</td><td>La pointe du signe montre le plus petit nombre.</td></tr><tr><td>Méthode</td><td>1. Tu comptes les chiffres. Plus de chiffres = plus grand.<br>2. Même nombre de chiffres ? Tu compares de gauche à droite.</td></tr><tr><td>Les nombres avec −</td><td>Un nombre négatif est plus petit que 0. −20 &lt; −5, car −20 est plus loin de 0.</td></tr></table>`,
+ levels:[
+ {t:'Niveau 1',memo:MEMO1,s:'Les nombres de 3 à 6 chiffres',comp:'N103, phase 1',teach:'comparer deux nombres de 3 à 6 chiffres.',g:[qNat(3,4),qNat(5,6)]},
+ {t:'Niveau 2',memo:MEMO2,s:'Les nombres de 7 à 9 chiffres',comp:'N203, phase 2',teach:'comparer avec <, >, = des nombres de 7 à 9 chiffres, souvent très proches.',g:[qNat(7,7),qNat(8,9)]},
+ {t:'Niveau 3',memo:MEMO3,p3:'Z301',s:'Les nombres avec − (de −100 à 100)',comp:'Z301, phase 3',teach:'comparer des entiers de [−100 ; 100], avec la droite graduée dans l\'explication.',g:[qZ]}]});
+
+}
+</script>
+</body>
+</html>

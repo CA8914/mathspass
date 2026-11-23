@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N205 · Je soustrais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="../shared/engine.js"></script>
+<script>
+{
+const {R,pick,G,col}=MM;
+/* b plus petit que a, avec au moins un emprunt (retenue) */
+function withBorrow(a,lo){let b,g=0;do{b=R(lo,a-1);g++}while(g<200&&![...String(b)].reverse().some((d,i)=>+d>+(String(a).split('').reverse()[i]||0)));return b}
+const diffQ=(a,b,ctx,unit)=>{const d=a-b;
+ return{big:`<div class="big">${G(a)} − ${G(b)} = ?</div>`,text:ctx||['Calcule la différence.','Combien ça fait ?'],kind:'num',ans:d,fmt:G,unit,
+ hint:'Pose le calcul en colonnes. Le plus grand nombre en haut. Commence par la droite.',ok:`${G(a)} − ${G(b)} = ${G(d)}`,
+ ex:['Tu poses le calcul en colonnes. Le plus grand nombre en haut.','Tu soustrais de droite à gauche.','Si le chiffre du haut est trop petit, tu fais un emprunt : tu ajoutes 10 en haut et 1 en bas dans la colonne suivante.',`<span class="calc">${G(a)} − ${G(b)} = ${G(d)}</span>`,`Tu vérifies : <span class="calc">${G(b)} + ${G(d)} = ${G(a)}</span>`],
+ exHtml:col([['',a],['−',b]],d)}};
+const q1=()=>{const a=R(150,999);return diffQ(a,R(20,a-10))};
+const q1b=()=>{const a=R(300,999);return diffQ(a,withBorrow(a,100))};
+const q2=()=>{const a=R(1500,10000);return diffQ(a,withBorrow(a,200))};
+const q2z=()=>{const a=pick([1000,2000,5000,10000,3005,4002,7000,6080]);return diffQ(a,R(120,a-50))};
+const q2c=()=>{const a=R(2000,9999),b=withBorrow(a,500);return diffQ(a,b,[`Tu as ${G(a)} € sur ton compte.`,`Tu achètes un scooter à ${G(b)} €.`,'Combien d\'argent il te reste ?'],'€')};
+const q3=()=>{const a=R(20000,999999);return diffQ(a,withBorrow(a,Math.floor(a/20)))};
+const q3e=()=>{const v=[['Liège','Namur'],['Anvers','Gand'],['Charleroi','Mons']][R(0,2)],a=R(95000,520000),b=withBorrow(a,40000);
+ return diffQ(a,b,[`${v[0]} a ${G(a)} habitants.`,`${v[1]} a ${G(b)} habitants.`,`Combien d'habitants ${v[0]} a de plus que ${v[1]} ?`])};
+const q3c=()=>{const T=pick([100000,250000,500000,1000000]),a=R(Math.floor(T/5),T-1);return diffQ(T,a,['Pour arriver au nombre rond, combien il manque ?',`Calcule ${G(T)} − ${G(a)}.`])};
+const MEMO1=`<p><b>Soustraire des nombres plus petits que 1 000</b></p><p>1. Le plus grand nombre en haut.</p><p>2. Unités sous unités. Tu commences par la droite.</p><p>3. Le chiffre du haut est trop petit ? Tu fais un emprunt : +10 en haut, +1 en bas dans la colonne suivante.</p>${MM.col([['',532],['−',187]],345)}<p>Vérifie : 187 + 345 = 532.</p>`;
+const MEMO2=`<p><b>Soustraire jusqu'à 10 000</b></p><p>Même méthode : colonnes, de droite à gauche, avec des emprunts.</p><p>Attention aux zéros en haut ! Tu fais un emprunt à chaque fois.</p>${MM.col([['',5000],['−',1368]],3632)}<p>Vérifie toujours avec une addition : 1 368 + 3 632 = 5 000.</p>`;
+const MEMO3=`<p><b>Les grands nombres et les écarts</b></p><p>« Combien de plus ? », « Quelle différence ? », « Combien il manque ? » : c'est une soustraction.</p><p>Le plus grand nombre en haut, toujours.</p>${MM.col([['',250000],['−',87450]],162550)}<p>Vérifie : 87 450 + 162 550 = 250 000.</p>`;
+MM.run({code:'N205',title:'Je soustrais',
+ desc:['Tu calcules des différences.','Tu trouves ce qu\'il reste, ou combien il y a de plus.'],
+ icon:'<svg viewBox="0 0 120 120" role="img" aria-label="Un signe moins"><circle cx="60" cy="60" r="56" fill="var(--peach)"/><path d="M30 60h60" stroke="var(--coral)" stroke-width="14" stroke-linecap="round"/></svg>',
+ memo:`<p><b>Soustraire en colonnes :</b></p><p>1. Le plus grand nombre en haut.</p><p>2. Les unités sous les unités. Tu commences par la droite.</p><p>3. Le chiffre du haut est trop petit ? Tu fais un emprunt : +10 en haut, +1 en bas dans la colonne suivante.</p>${col([['',5203],['−',1876]],3327)}<p>Pour vérifier : 1 876 + 3 327 = 5 203.</p><p>« Combien il reste ? », « Combien de plus ? » : c'est une soustraction.</p>`,
+ levels:[
+ {t:'Niveau 1',memo:MEMO1,s:'Les nombres plus petits que 1 000',comp:'N106, phase 1',teach:'différence de deux nombres < 1 000, avec et sans emprunt.',g:[q1,q1b]},
+ {t:'Niveau 2',memo:MEMO2,s:'Les nombres jusqu\'à 10 000',comp:'N205, phase 2',teach:'différence de deux nombres ≤ 10 000, avec emprunts et zéros (ex. 5 000 − 1 368).',g:[q2,q2z,q2c]},
+ {t:'Niveau 3',memo:MEMO3,s:'Les grands nombres et les écarts',comp:'dépassement',teach:'différences jusqu\'à 1 000 000, problèmes d\'écart (« combien de plus ») et complément à un nombre rond.',g:[q3,q3e,q3c]}]});
+
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N201 · Je lis les grands nombres</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="../shared/engine.js"></script>
+<script>
+{
+const {R,pick,shuf,G,W,numK,near,RANG,clsTable,opts}=MM;
+const big=n=>`<div class="big">${G(n)}</div>`;
+/* Choisir la bonne écriture en lettres */
+const qWords=(a,b)=>()=>{const n=numK(R(a,b)),opts=shuf([n,...near(n,2)]);
+ return{big:big(n),text:['Lis ce nombre.','Choisis la bonne écriture en lettres.'],kind:'choice',long:true,ans:n,
+ opts:opts.map(v=>({l:W(v),v})),hint:'Coupe le nombre en paquets de 3 chiffres, en partant de la droite. Lis paquet par paquet.',
+ ok:`${G(n)} se lit : ${W(n)}.`,ex:['Tu coupes le nombre en paquets de 3 chiffres, en partant de la droite.','Tu lis chaque paquet, puis le nom de la classe : milliards, millions, mille.',`${G(n)} se lit : <b>${W(n)}</b>.`],exHtml:clsTable(n)}};
+/* Le chiffre d'un rang */
+const qRang=(a,b)=>()=>{const n=numK(R(a,b),.15),s=String(n),p=R(0,s.length-1),d=+s[s.length-1-p];
+ return{big:big(n),text:['Regarde ce nombre.',`Quel est le chiffre des <b>${RANG[p]}</b> ?`],kind:'choice',ans:d,
+ opts:opts(d,shuf([...s].map(Number)),4,()=>R(0,9)).map(v=>({l:`<big>${v}</big>`,v})),
+ hint:'Utilise le tableau des classes : unités, mille, millions, milliards.',ok:`Le chiffre des ${RANG[p]} est ${d}.`,
+ ex:['Tu places le nombre dans le tableau des classes.',`Tu cherches la colonne des ${RANG[p]}.`,`Le chiffre des ${RANG[p]} est <b>${d}</b>.`],exHtml:clsTable(n,p)}};
+/* Combien de mille / millions / milliards en tout */
+const qCombien=(a,b,div,mot)=>()=>{const n=numK(R(a,b)),ans=Math.floor(n/div),o=opts(ans,shuf([ans%1000,Number(String(n)[0]),Math.floor(n/(div*1000))||null,ans*10]));
+ return{big:big(n),text:['Regarde ce nombre.',`Combien de <b>${mot}</b> il y a dans ce nombre ?`],kind:'choice',ans,
+ opts:o.map(v=>({l:`<big>${G(v)}</big>`,v})),hint:`Cache les ${String(div).length-1} derniers chiffres. Regarde ce qui reste.`,
+ ok:`Il y a ${G(ans)} ${mot} dans ${G(n)}.`,ex:[`Tu cherches le nombre de ${mot}.`,`Tu caches les ${String(div).length-1} derniers chiffres du nombre.`,`Il reste ${G(ans)}.`,`Dans ${G(n)}, il y a <b>${G(ans)}</b> ${mot}.`],exHtml:clsTable(n)}};
+const MEMO1=`<p><b>Lire un nombre jusqu'à 6 chiffres</b></p><p>1. Coupe le nombre en paquets de 3 chiffres, en partant de la droite.</p><p>2. Lis le paquet de gauche, puis dis « mille ».</p><p>3. Lis le dernier paquet.</p>${MM.clsTable(482305)}<p>482 305 se lit : ${MM.W(482305)}.</p><p>En Belgique : 70 = septante, 80 = quatre-vingts, 90 = nonante.</p>`;
+const MEMO2=`<p><b>Lire un nombre avec des millions (7 à 9 chiffres)</b></p><p>1 000 000 = un million. Il y a 6 zéros.</p><p>1. Coupe le nombre en paquets de 3 chiffres, en partant de la droite.</p><p>2. Lis les millions, puis les mille, puis les unités.</p>${MM.clsTable(3042517)}<p>3 042 517 se lit : ${MM.W(3042517)}.</p><p>Combien de millions ? Cache les 6 derniers chiffres : il reste 3.</p>`;
+const MEMO3=`<p><b>Lire un nombre avec des milliards (10 à 12 chiffres)</b></p><p>1 000 000 000 = un milliard. Il y a 9 zéros.</p><p>Tu lis dans l'ordre : milliards, millions, mille, unités.</p>${MM.clsTable(25003400120)}<p>25 003 400 120 se lit : ${MM.W(25003400120)}.</p><p>Une classe vide (000) : tu ne la lis pas.</p>`;
+MM.run({code:'N201',title:'Je lis les grands nombres',
+ desc:['Tu lis des nombres avec beaucoup de chiffres.','Tu trouves les millions, les mille et les unités.'],
+ icon:'<svg viewBox="0 0 120 120" role="img" aria-label="Un grand nombre"><circle cx="60" cy="60" r="56" fill="var(--lav)"/><rect x="14" y="42" width="92" height="36" rx="10" fill="var(--card)" stroke="var(--bag)" stroke-width="3"/><text x="60" y="68" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)" font-family="Atkinson Hyperlegible,Verdana,sans-serif">3 042 517</text></svg>',
+ memo:`<p>Pour lire un grand nombre :</p><p>1. Coupe le nombre en paquets de 3 chiffres, en partant de la droite.</p><p>2. Lis chaque paquet, puis dis le nom de la classe.</p>${clsTable(3042517)}<p>3 042 517 se lit : trois millions quarante-deux mille cinq cent dix-sept.</p><p>En Belgique : 70 = septante, 80 = quatre-vingts, 90 = nonante.</p>`,
+ levels:[
+ {t:'Niveau 1',memo:MEMO1,s:'Les nombres de 3 à 6 chiffres',comp:'N101, phase 1',teach:'lire des nombres de 3 à 6 chiffres, rang d\'un chiffre, nombre de mille.',g:[qWords(3,6),qRang(4,6),qCombien(4,6,1e3,'mille')]},
+ {t:'Niveau 2',memo:MEMO2,s:'Les nombres de 7 à 9 chiffres',comp:'N201, phase 2',teach:'lire des nombres de 7 à 9 chiffres, rang d\'un chiffre, nombre de millions.',g:[qWords(7,9),qRang(7,9),qCombien(7,9,1e6,'millions'),qCombien(7,9,1e3,'mille')]},
+ {t:'Niveau 3',memo:MEMO3,s:'Les milliards : 10 à 12 chiffres',comp:'dépassement',teach:'lire des nombres jusqu\'aux centaines de milliards (pas de compétence de lecture en phase 3).',g:[qWords(10,12),qRang(10,12),qCombien(10,12,1e9,'milliards'),qCombien(10,12,1e6,'millions')]}]});
+
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Du plus petit au plus grand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: doux, encourageant, FALC (phrases courtes, gros texte, une idée par ligne), en « tu »
+   IDEA: un escalier d'étiquettes : on range du plus petit au plus grand
+   PICTURE: un escalier de 5 marches colorées avec des étiquettes, puis l'étagère où l'élève range
+   COLOUR and TYPE: lavande, pêche, menthe, encre prune (comme « Promos et bonnes affaires ») ; Atkinson Hyperlegible
+   LAYOUT: une seule colonne calme, boutons larges, score toujours visible */
+:root{color-scheme:light dark;
+--bg:light-dark(#f4f0fb,#1c1726);--card:light-dark(#fff,#2a2338);--ink:light-dark(#2e2541,#f2edf9);
+--soft:light-dark(#655a7a,#c3b9d6);--lav:light-dark(#e4dbf8,#3a3150);--peach:light-dark(#ffe6dc,#47302f);
+--coral:light-dark(#e2715d,#ff9f8b);--mint:light-dark(#d8f3e5,#21413a);--mintInk:light-dark(#1d6a49,#a3e6c6);
+--yel:light-dark(#fff1c9,#4a4025);--line:light-dark(#ddd3ee,#463c5e);--btn:light-dark(#5a4a8c,#cbbcf4);--btnInk:light-dark(#fff,#1c1726);--bag:light-dark(#8a79bd,#8f7fc6)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.6 "Atkinson Hyperlegible",Verdana,sans-serif;overflow-x:clip}
+main{max-width:860px;margin:0 auto;padding:0 max(4vw,16px) 48px}
+h1{font-size:clamp(30px,6vw,44px);line-height:1.1;margin:0 0 14px;text-wrap:balance}
+h2{font-size:28px;line-height:1.2;margin:0 0 8px}
+p{margin:0 0 6px}
+button,input{font:inherit}button{cursor:pointer}
+:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:center;padding:28px 0 18px}
+.hero svg{width:100%;height:auto;max-height:240px}
+.intro p{font-size:20px}
+.pill{display:inline-block;background:var(--lav);border-radius:999px;padding:2px 14px;font-size:16px;font-weight:700;margin-bottom:10px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:8px 0 18px}
+.tile{display:grid;gap:6px;justify-items:start;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:22px;padding:18px}
+.tile:hover{border-color:var(--btn)}
+.tile svg{width:52px;height:52px;color:var(--coral)}
+.tile b{font-size:24px}.tile span{color:var(--soft);font-size:17px}
+.levels{display:grid;gap:14px;margin:12px 0 24px}
+.lv{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:16px;align-items:center;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:20px;padding:16px 18px;min-height:88px}
+.lv:not(:disabled):hover{border-color:var(--btn)}
+.lv:disabled{opacity:.55;cursor:not-allowed}
+.lv .num{width:64px;height:64px;border-radius:50%;background:var(--lav);display:grid;place-items:center;font-size:28px;font-weight:700}
+.lv b{display:block;font-size:22px}.lv small{color:var(--soft);font-size:17px}
+.stars{display:flex;gap:2px}.stars svg{width:24px;height:24px}
+.st-on{fill:#f0b84d}.st-off{fill:var(--line)}
+details{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 18px;margin:0 0 14px}
+summary{font-weight:700;cursor:pointer;min-height:32px}
+.memo-t{width:100%;border-collapse:collapse;margin-top:8px}
+.memo-t td{padding:8px 6px;border-top:1px solid var(--line);vertical-align:top}
+.memo-t td:first-child{font-weight:700;width:9.5em}
+.top{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:14px 0 10px;border-bottom:2px solid var(--line);margin-bottom:18px}
+.score{background:var(--btn);color:var(--btnInk);border-radius:999px;padding:6px 18px;font-weight:700;font-size:20px}
+.ghost{background:none;border:2px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 16px;min-height:44px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:16px 0 4px}
+.dots{display:flex;gap:6px;width:100%}
+.dots i{flex:1;height:10px;border-radius:5px;background:var(--line)}
+.dots i.g{background:#6cc79a}.dots i.b{background:var(--coral)}.dots i.c{background:var(--btn)}
+.qn{color:var(--soft);font-size:17px;margin-bottom:8px}
+.qtext{background:var(--card);border-radius:20px;padding:18px 20px;margin-bottom:16px;border-left:8px solid var(--lav)}
+.qtext p:last-child{font-weight:700;font-size:21px;margin:6px 0 0}
+.qtext svg{width:58px;height:34px;vertical-align:middle;margin-left:8px;fill:var(--bag)}
+.lbl{display:block;font-weight:700;margin-bottom:6px}
+.btn{background:var(--btn);color:var(--btnInk);border:0;border-radius:16px;padding:12px 26px;min-height:52px;font-weight:700;font-size:20px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.alt{background:var(--lav);color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+/* cartes nombres / articles */
+.vs{display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,24px);flex-wrap:wrap;margin:0 0 16px}
+.card{position:relative;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:14px 20px;display:grid;justify-items:center;gap:2px;min-width:150px;text-align:center}
+.card .emo,.tag .emo{font-size:48px;line-height:1.15;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.card .nm{font-weight:700;font-size:17px}
+.card .val{font-size:clamp(30px,5vw,40px);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sbox{width:76px;height:76px;border-radius:18px;border:3px dashed var(--line);display:grid;place-items:center;font-size:42px;font-weight:700;color:var(--soft)}
+.sbox.good{border:3px solid #6cc79a;background:var(--mint);color:var(--mintInk)}.sbox.bad{border:3px solid var(--coral);background:var(--peach);color:var(--coral)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+.opt{background:var(--card);color:var(--ink);border:3px solid var(--line);border-radius:16px;padding:10px 14px;min-height:60px;font-size:22px;font-weight:700;line-height:1.2}
+.opt big{display:block;font-size:38px;line-height:1.1}
+.opt small{display:block;font-size:16px;font-weight:400;color:var(--soft)}
+.opt:not(:disabled):hover{border-color:var(--btn)}
+.opt.good{background:var(--mint);border-color:#6cc79a}.opt.bad{background:var(--peach);border-color:var(--coral)}
+.opt:disabled{cursor:default}
+/* étagère */
+.shelf{display:flex;align-items:flex-start;gap:6px;background:var(--card);border:2px solid var(--line);border-bottom:12px solid var(--bag);border-radius:22px 22px 8px 8px;padding:16px 14px}
+.cell{flex:1 1 0;display:flex;flex-direction:column;align-items:stretch;gap:6px}
+.slot{min-height:92px;border:3px dashed var(--line);border-radius:16px;display:grid;place-items:center;padding:3px;background:var(--bg)}
+.ph{font-size:24px;font-weight:700;color:var(--soft)}
+.cap{font-size:15px;color:var(--soft);text-align:center;line-height:1.2;min-height:1.2em}
+.sign{font-size:30px;font-weight:700;color:var(--bag);align-self:center;margin-top:-22px;flex:none}
+.tag{position:relative;display:grid;justify-items:center;background:var(--yel);color:var(--ink);border:3px solid #f0b84d;border-radius:14px;padding:8px 10px;min-width:110px;font-size:clamp(20px,2.6vw,24px);font-weight:700;line-height:1.15;white-space:nowrap;font-variant-numeric:tabular-nums;animation:pop .2s ease-out}
+.tag .emo{font-size:30px}
+.tag small{font-size:14px;font-weight:400;white-space:normal;text-align:center}
+.slot .tag{width:100%;min-width:0}
+.tag.good{background:var(--mint);border-color:#6cc79a}.tag.bad{background:var(--peach);border-color:var(--coral)}
+.pool{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;min-height:80px;padding:14px 0}
+.hint{background:var(--lav);border-radius:14px;padding:10px 16px;margin:10px 0}
+.help{color:var(--soft);font-size:17px;text-align:center;margin:12px 0 0}
+.fb{border-radius:20px;padding:18px 20px;margin:16px 0;animation:pop .35s ease-out}
+.fb.ok{background:var(--mint)}.fb.ok .big{color:var(--mintInk)}
+.fb.no{background:var(--peach)}
+.fb .big{font-size:26px;font-weight:700;margin-bottom:6px}
+.fb ol{margin:6px 0 4px;padding-left:1.4em}.fb li{margin:4px 0}
+.calc{font-weight:700;white-space:nowrap}
+.answer{font-size:clamp(20px,3vw,26px);font-weight:700;background:var(--card);border-radius:14px;padding:8px 14px;display:inline-block;margin:4px 0 8px;font-variant-numeric:tabular-nums}
+.tbl{border-collapse:collapse;margin:10px 0 4px;font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.tbl th{font-size:14px;color:var(--soft);padding:2px 4px;font-weight:700}
+.tbl td{width:40px;height:44px;text-align:center;border:1px solid var(--line);background:var(--card)}
+.tbl td.sep{width:14px;border:0;background:none}
+.tbl td.add{color:var(--soft);font-style:italic}
+.tbl td.hl{background:var(--yel);box-shadow:inset 0 0 0 2px #f0b84d}
+.tbl .rk{font-size:15px;color:var(--soft);padding-right:8px;text-align:right}
+.leg{font-size:15px;color:var(--soft);margin:2px 0 6px}
+.scroll{overflow-x:auto}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.end{text-align:center;padding:30px 0}
+.end .stars{justify-content:center;margin:12px 0}.end .stars svg{width:56px;height:56px}
+.end .res{font-size:clamp(44px,10vw,64px);font-weight:700;line-height:1}
+.end .row{justify-content:center;margin-top:20px}
+.box{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:22px;margin:24px 0}
+.rtab{width:100%;border-collapse:collapse;margin:10px 0}
+.rtab th,.rtab td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+.rtab td.r,.rtab th.r{text-align:right;white-space:nowrap}
+.rtab th{font-size:16px;color:var(--soft)}
+.name-in{width:100%;max-width:340px;font-size:26px;padding:10px 14px;border:3px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
+.name-in:focus{border-color:var(--btn);outline:none}
+.err{color:var(--coral);font-weight:700;margin:6px 0}
+textarea{width:100%;min-height:140px;font:16px/1.5 inherit;border:2px solid var(--line);border-radius:14px;padding:10px;background:var(--card);color:var(--ink)}
+.note{font-size:15px;color:var(--soft)}
+.warn{background:var(--peach);border-radius:16px;padding:14px 18px;margin-top:12px}
+@media(max-width:720px){
+ .shelf{flex-direction:column;align-items:stretch;gap:2px}
+ .cell{flex-direction:row;align-items:center;gap:10px}.cell .slot{flex:1;min-height:70px}.cap{width:76px;text-align:left;order:-1}
+ .sign{transform:rotate(90deg);margin:0 auto;font-size:26px;line-height:1}
+}
+@media(max-width:600px){.hero{grid-template-columns:1fr;padding-top:20px}.hero svg{max-height:170px;order:-1}.lv{grid-template-columns:48px minmax(0,1fr)}.lv .num{width:48px;height:48px;font-size:22px}.lv .stars{grid-column:2}.tbl{font-size:20px}.tbl td{width:32px;height:38px}}
+@media(prefers-reduced-motion:reduce){.fb,.tag{animation:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></symbol>
+<symbol id="i-cmp" viewBox="0 0 32 32"><rect x="2" y="6" width="12" height="20" rx="4" fill="currentColor"/><rect x="18" y="6" width="12" height="20" rx="4" fill="currentColor" opacity=".45"/><path d="M11 12l-4 4 4 4M21 12l4 4-4 4" fill="none" stroke="var(--card)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-rng" viewBox="0 0 32 32"><g fill="currentColor"><rect x="2" y="22" width="6" height="7" rx="2"/><rect x="9.5" y="17" width="6" height="12" rx="2"/><rect x="17" y="11" width="6" height="18" rx="2"/><rect x="24.5" y="4" width="6" height="25" rx="2"/></g></symbol>
+</svg>
+<main id="app"></main>
+<footer class="note" style="text-align:center;padding:0 16px 28px">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+
+<script src="../shared/engine.js"></script>
+<script>
+{
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const grp=s=>String(s).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const p2=n=>String(n).padStart(2,'0');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const N=8;
+const PRAISE=['Bravo !','Super !','Excellent !','Génial !','Tu as trouvé !','Parfait !','Très bien !','Bien joué !','Continue comme ça !','Magnifique !'];
+
+/* ---------- Les nombres ---------- */
+const CATS=[
+ {min:0,max:3,p:[['Baguette','🥖'],['Croissant','🥐'],['Canette','🥤'],['Pomme','🍎'],['Chocolat','🍫'],['Biscuits','🍪'],['Banane','🍌'],['Bouteille d\'eau','💧']]},
+ {min:1,max:9,p:[['Cahier','📒'],['Stylo','🖊️'],['Crayon','✏️'],['Ciseaux','✂️'],['Calculatrice','🧮'],['Classeur','📁'],['Latte','📏'],['Trousse','👝']]},
+ {min:8,max:40,p:[['T-shirt','👕'],['Casquette','🧢'],['Chaussettes','🧦'],['Veste','🧥'],['Écharpe','🧣'],['Short','🩳'],['Baskets','👟'],['Jean','👖']]},
+ {min:12,max:80,p:[['Casque audio','🎧'],['Jeu vidéo','🎮'],['Ballon','⚽'],['Livre','📚'],['Sac à dos','🎒'],['Montre','⌚'],['Lunettes de soleil','🕶️'],['Skateboard','🛹']]}];
+const ENDS=[99,49,95,50,5,90,9,25,75,45,0,10,20,30,80,60,15,35,85,40,1];
+const NATN=['centaines de mille','dizaines de mille','unités de mille','centaines','dizaines','unités'];
+function F(it){if(it.k=='nat')return grp(it.v);const I=Math.floor(it.v/100),c=it.v%100;
+ if(it.k=='prix')return I+','+p2(c)+' €';return grp(I)+','+(it.d==1?c/10:p2(c))}
+function genNat(n){
+ const L=rnd(3,6),base=[rnd(1,9)];for(let i=1;i<L;i++)base.push(rnd(0,9));
+ const out=new Set([+base.join('')]);let g=0;
+ while(out.size<n&&g++<500){let s=base.slice();const r=Math.random();
+  if(r<.55){const i=Math.random()<.25?0:rnd(1,L-1);let d;do{d=rnd(i?0:1,9)}while(d==s[i]);s[i]=d}
+  else if(r<.75){const i=rnd(0,L-2),j=rnd(i+1,L-1);[s[i],s[j]]=[s[j],s[i]];if(s[0]==0)continue}
+  else{if(L>3&&(L==6||Math.random()<.5))s=s.slice(0,L-1);else s.push(rnd(0,9))}
+  const v=+s.join('');if(v>=100&&v<=999999)out.add(v)}
+ return shuf([...out]).map(v=>({k:'nat',v}))}
+function genDec(n){
+ const I=Math.random()<.7?rnd(0,20):rnd(10,89),out=new Map();let g=0;
+ while(out.size<n&&g++<500){const r=Math.random();let ip;
+  if(r<.55)ip=I;else if(r<.85)ip=Math.max(0,I+pick([-1,1,2]));else ip=I>=10?rnd(1,9):I+rnd(10,15);
+  let c,d;if(Math.random()<.45){d=1;c=rnd(1,9)*10}else{d=2;c=rnd(1,99);if(c%10==0)c+=rnd(1,9)}
+  const v=ip*100+c;if(!out.has(v))out.set(v,{k:'dec',v,d})}
+ return shuf([...out.values()])}
+function genPrix(n){
+ const C=pick(CATS),E=rnd(C.min,C.max),names=shuf(C.p),out=new Set();let g=0;
+ while(out.size<n&&g++<500){const r=Math.random();
+  let e=r<.5?E:r<.85?E+pick([-2,-1,1,2]):E+pick([-9,-5,5,9]);e=Math.min(99,Math.max(0,e));
+  const v=e*100+pick(ENDS);if(v>0)out.add(v)}
+ return shuf([...out]).map((v,i)=>({k:'prix',v,name:names[i][0],emo:names[i][1]}))}
+const GEN={nat:genNat,dec:genDec,prix:genPrix};
+function gen(k,n){let it;do{it=GEN[k](n)}while(it.length<n);return it}
+const sign=(a,b)=>a.v<b.v?'<':a.v>b.v?'>':'=';
+const SW={'<':'est plus petit que','>':'est plus grand que','=':'est égal à'};
+
+/* ---------- Explications FALC ---------- */
+function diff(a,b){
+ if(a.v==b.v)return a.k=='dec'&&a.d!=b.d?{t:`${F(a)} et ${F(b)}, c'est le même nombre. Le 0 à la fin ne change rien.`,c:[]}:{t:'Les 2 nombres sont les mêmes.',c:[]};
+ if(a.k=='nat'){const sa=String(a.v),sb=String(b.v);
+  if(sa.length!=sb.length)return{t:`${F(a)} a ${sa.length} chiffres. ${F(b)} a ${sb.length} chiffres. Plus de chiffres = plus grand.`,c:[6-Math.max(sa.length,sb.length)]};
+  let i=0;while(sa[i]==sb[i])i++;const col=6-sa.length+i;
+  return{t:`Même nombre de chiffres. Tu compares de gauche à droite. Au rang des ${NATN[col]} : ${sa[i]} ${SW[sa[i]<sb[i]?'<':'>']} ${sb[i]}.`,c:[col]}}
+ const Ia=Math.floor(a.v/100),Ib=Math.floor(b.v/100),ca=a.v%100,cb=b.v%100;
+ if(a.k=='prix'){if(Ia!=Ib)return{t:`Tu compares les euros : ${Ia} € et ${Ib} €.`,c:[0,1]};
+  return{t:`Mêmes euros (${Ia} €). Tu compares les centimes : ${ca} c et ${cb} c.`,c:[3,4]}}
+ if(Ia!=Ib)return{t:`Tu compares avant la virgule : ${Ia} et ${Ib}.`,c:[0,1]};
+ const A=p2(ca),B=p2(cb),i=A[0]!=B[0]?0:1;
+ let t=`Avant la virgule, c'est pareil (${Ia}). Après la virgule, tu compares ${i?'les centièmes':'les dixièmes'} : ${A[i]} et ${B[i]}.`;
+ for(const x of [a,b])if(x.d==1)t+=` Astuce : ${F(x)} = ${grp(Math.floor(x.v/100))},${p2(x.v%100)}.`;
+ return{t,c:[3+i]}}
+const METHOD={
+ nat:['1. Tu comptes les chiffres. Plus de chiffres = plus grand.','2. Même nombre de chiffres ? Tu compares chiffre par chiffre, de gauche à droite.'],
+ prix:['1. Tu compares les euros.','2. Mêmes euros ? Tu compares les centimes.'],
+ dec:['1. Tu compares avant la virgule.','2. Pareil ? Tu compares après la virgule.','Astuce : écris 2 chiffres après la virgule. 4,5 = 4,50.']};
+const HINT={nat:'Compte les chiffres de chaque nombre.',prix:'Regarde d\'abord les euros.',dec:'Regarde d\'abord avant la virgule. Astuce : 4,5 = 4,50.'};
+function cells(it){
+ if(it.k=='nat'){const s=String(it.v);return Array(6-s.length).fill(0).map(()=>({t:''})).concat([...s].map(t=>({t})))}
+ const I=String(Math.floor(it.v/100)),c=p2(it.v%100);
+ return [...(I.length==1?[{t:''},{t:I}]:[...I].map(t=>({t}))),{t:',',sep:1},{t:c[0]},{t:c[1],add:it.k=='dec'&&it.d==1}]}
+function table(k,items,hl,rank){
+ const head=k=='nat'?['CM','DM','UM','C','D','U'].map(h=>`<th>${h}</th>`).join(''):k=='prix'?'<th colspan="2">euros</th><th></th><th colspan="2">centimes</th>':'<th>D</th><th>U</th><th></th><th>d</th><th>c</th>';
+ const rows=items.map((x,i)=>`<tr><th class="rk">${rank?i+1+'.':''}</th>${cells(x).map((c,j)=>`<td class="${c.sep?'sep ':''}${c.add?'add ':''}${hl&&hl.c.includes(j)?'hl':''}">${c.t}</td>`).join('')}</tr>`).join('');
+ const leg=k=='nat'?'CM = centaines de mille · DM = dizaines de mille · UM = unités de mille · C = centaines · D = dizaines · U = unités':k=='dec'?'D = dizaines · U = unités · d = dixièmes · c = centièmes. En gris : le 0 ajouté.':'';
+ return`<div class="scroll"><table class="tbl"><thead><tr><th></th>${head}</tr></thead><tbody>${rows}</tbody></table></div>${leg?`<p class="leg">${leg}</p>`:''}${hl&&hl.c.length?'<p class="leg">En jaune : les chiffres qui font la différence.</p>':''}`}
+
+/* ---------- Les questions ---------- */
+function qCmp(k){
+ if(k=='prix'&&Math.random()<.5){const items=gen('prix',2),w=pick(['moins','plus']),ans=(w=='moins')==(items[0].v<items[1].v)?0:1;
+  return{type:'pick',k,items,w,ans}}
+ let items=gen(k,2);
+ if(k=='nat'&&Math.random()<.1)items[1]={...items[0]};
+ if(k=='dec'&&Math.random()<.15){const v=rnd(0,20)*100+rnd(1,9)*10;items=shuf([{k:'dec',v,d:1},{k:'dec',v,d:2}])}
+ return{type:'sign',k,items,ans:sign(items[0],items[1])}}
+function qRng(k,i){const items=gen(k,5),dir=(i+FLIP)%2?'desc':'asc';
+ const order=items.map((_,j)=>j).sort((x,y)=>dir=='asc'?items[x].v-items[y].v:items[y].v-items[x].v);
+ return{type:'rng',k,items,dir,order}}
+let FLIP=0;
+
+const GAMES={
+ cmp:{t:'Je compare',ic:'cmp',d:'Tu compares 2 nombres. Tu choisis le bon signe : <, > ou =.',lv:[
+  {t:'Niveau 1',s:'Les nombres entiers',k:'nat'},{t:'Niveau 2',s:'Les prix',k:'prix'},{t:'Niveau 3',s:'Les nombres à virgule',k:'dec'}]},
+ rng:{t:'Je range',ic:'rng',d:'Tu ranges 5 nombres. Du plus petit au plus grand, ou du plus grand au plus petit.',lv:[
+  {t:'Niveau 1',s:'Les nombres entiers',k:'nat'},{t:'Niveau 2',s:'Les prix',k:'prix'},{t:'Niveau 3',s:'Les nombres à virgule',k:'dec'}]}};
+
+/* ---------- Prénom, progrès, résultats ---------- */
+let pname='',log=[],prog={};
+try{pname=localStorage.getItem('mm-name')||'';log=JSON.parse(localStorage.getItem('cl-log')||'[]');prog=JSON.parse(localStorage.getItem('cl-prog')||'{}')}catch(e){}
+for(const g in GAMES)prog[g]=prog[g]||{u:1,b:{}};
+const save=()=>{try{localStorage.setItem('mm-name',pname);localStorage.setItem('cl-log',JSON.stringify(log));localStorage.setItem('cl-prog',JSON.stringify(prog))}catch(e){}};
+const prof=()=>location.hash==='#prof';
+
+const MEMO=`<table class="memo-t">
+<tr><td>&lt;</td><td>« est plus petit que ». Exemple : 3 &lt; 8</td></tr>
+<tr><td>&gt;</td><td>« est plus grand que ». Exemple : 8 &gt; 3</td></tr>
+<tr><td>=</td><td>« est égal à ». Exemple : 5 = 5</td></tr>
+<tr><td>Astuce</td><td>La pointe du signe montre le plus petit nombre.</td></tr>
+<tr><td>Ordre croissant</td><td>Du plus petit au plus grand. L'escalier monte.</td></tr>
+<tr><td>Ordre décroissant</td><td>Du plus grand au plus petit. L'escalier descend.</td></tr>
+<tr><td>Les nombres entiers</td><td>${METHOD.nat.join('<br>')}</td></tr>
+<tr><td>Les prix</td><td>${METHOD.prix.join('<br>')}</td></tr>
+<tr><td>Les nombres à virgule</td><td>${METHOD.dec.join('<br>')}</td></tr></table>`;
+const memo=()=>`<details><summary>Mon aide-mémoire</summary>${MEMO}</details>`;
+const stars=(n)=>{const s=n>=N?3:n>=6?2:n>=4?1:0;return`<span class="stars" aria-label="${s} étoile${s>1?'s':''} sur 3">${[0,1,2].map(i=>`<svg viewBox="0 0 24 24"><use href="#star" class="${i<s?'st-on':'st-off'}"/></svg>`).join('')}</span>`};
+const stair=d=>`<svg viewBox="0 0 70 40" aria-hidden="true">${[0,1,2,3,4].map(i=>{const h=8+i*7,x=(d=='asc'?i:4-i)*14;return`<rect x="${x}" y="${40-h}" width="11" height="${h}" rx="3"/>`}).join('')}</svg>`;
+const HERO=`<svg viewBox="0 0 320 240" role="img" aria-label="Un escalier de 5 marches avec des étiquettes de prix">
+ <circle cx="165" cy="122" r="105" fill="var(--lav)"/><ellipse cx="165" cy="212" rx="120" ry="9" fill="var(--line)"/>
+ ${['#a593e0','#6cc79a','#f0b84d','var(--coral)','var(--bag)'].map((c,i)=>`<rect x="${62+i*40}" y="${172-i*26}" width="34" height="${38+i*26}" rx="8" fill="${c}"/>`).join('')}
+ <g transform="translate(-140 14) rotate(-12 250 60)"><path d="M222 44h52a9 9 0 0 1 9 9v22a9 9 0 0 1-9 9h-52l-14-20z" fill="var(--yel)" stroke="#f0b84d" stroke-width="3"/><circle cx="222" cy="64" r="4.5" fill="var(--lav)"/><text x="250" y="71" text-anchor="middle" font-size="19" font-weight="700" fill="var(--ink)" font-family="Atkinson Hyperlegible,Verdana,sans-serif">1 &lt; 2</text></g>
+ <circle cx="252" cy="40" r="7" fill="#f0b84d"/><circle cx="290" cy="190" r="6" fill="#6cc79a"/><circle cx="48" cy="160" r="5" fill="var(--coral)"/></svg>`;
+
+/* ---------- Écrans ---------- */
+let V='hub',G='cmp',L=0,deck=[],qi=0,score=0,res=[],P={};
+function go(v){V=v;render();window.scrollTo(0,0)}
+function render(){
+ const app=$('#app');
+ if(!pname&&V!='name')V='name';
+ if(V=='name'){app.innerHTML=`<div class="hero"><div class="intro"><span class="pill">Les nombres et les prix</span><h1>Du plus petit au plus grand</h1><p>Bonjour !</p><p>Écris ton prénom.</p><p>Comme ça, ton professeur voit tes résultats.</p>
+  <form id="nameform" style="margin-top:14px"><label class="lbl" for="pn">Ton prénom :</label><input class="name-in" id="pn" maxlength="30" autocomplete="off"><div class="err" id="pnerr" hidden>Écris ton prénom pour commencer.</div><div class="row" style="margin-top:12px"><button class="btn">C'est parti !</button></div></form></div>${HERO}</div>`;
+  $('#nameform').addEventListener('submit',e=>{e.preventDefault();const v=$('#pn').value.trim();if(!v){$('#pnerr').hidden=false;return}pname=v;save();go('hub')});return}
+ if(V=='hub'){app.innerHTML=`<div class="bar"><b>Bonjour ${esc(pname)} !</b><div class="row"><button class="ghost" data-go="results">Mes résultats</button><a class="ghost" href="../index.html" onclick="this.href='../index.html'+location.hash" style="text-decoration:none;display:inline-flex;align-items:center">← Toutes les applications</a></div></div>
+  <div class="hero"><div class="intro"><span class="pill">Les nombres et les prix</span><h1>Du plus petit au plus grand</h1><p>Dans un magasin, tu compares souvent les prix.</p><p>Tu cherches le moins cher.</p><p>Tu vas apprendre à comparer et à ranger les nombres.</p><p><b>Choisis un jeu.</b></p></div>${HERO}</div>
+  <div class="tiles">${Object.entries(GAMES).map(([k,g])=>`<button class="tile" data-game="${k}"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#i-${g.ic}"/></svg><b>${g.t}</b><span>${g.d}</span></button>`).join('')}</div>
+  ${memo()}<details><summary>Pour l'enseignant·e</summary>
+  <p class="note">2 jeux, 3 niveaux par jeu. Chaque niveau compte 8 questions. Le niveau suivant s'ouvre avec 5 points sur 8. Les nombres changent à chaque partie.</p>
+  <p class="note">Je compare : niveau 1 entiers (N203, phase 2), niveau 2 prix, niveau 3 nombres à virgule, avec des pièges comme 3,5 = 3,50 (Z301/Q301, phase 3).</p>
+  <p class="note">Je range : niveau 1 entiers de 3 à 6 chiffres (N104, révision phase 1), niveaux 2 et 3 prix et nombres à virgule (Q301, phase 3). L'ordre croissant et l'ordre décroissant alternent.</p>
+  <p class="note">Résultats : cette application fait partie du site MathsPass. Le prénom est écrit une seule fois pour tout le site. Chaque niveau terminé s'ajoute à l'écran « Mes résultats » du site, d'où l'élève envoie tout à son professeur. Pour ouvrir tous les niveaux, ajoute #prof à la fin de l'adresse.</p></details>`;return}
+ if(V=='levels'){const g=GAMES[G],open=prof()?3:prog[G].u;
+  app.innerHTML=`<div class="bar"><button class="ghost" data-go="hub">← Tous les jeux</button><b>${esc(pname)}</b></div>
+  <div style="padding:18px 0 4px"><h2>${g.t}</h2><p>${esc(g.d)}</p><p><b>Choisis un niveau.</b></p></div>
+  <div class="levels">${g.lv.map((l,i)=>`<button class="lv" data-l="${i}" ${i>=open?'disabled':''}><span class="num">${i+1}</span><span><b>${l.t}</b><small>${l.s}${i>=open?' · Fermé : réussis le niveau '+i+' pour l\'ouvrir':''}</small></span>${prog[G].b[i]!==undefined?stars(prog[G].b[i]):''}</button>`).join('')}</div>${memo()}`;return}
+ if(V=='play'){app.innerHTML=`<div class="top"><button class="ghost" data-go="levels">← Niveaux</button><b>${GAMES[G].t} · ${GAMES[G].lv[L].t}</b><span class="score">Score : ${score}</span><div class="dots">${Array.from({length:N},(_,k)=>`<i class="${k<res.length?(res[k]?'g':'b'):k===qi?'c':''}"></i>`).join('')}</div></div>
+  <div class="qn">Question ${qi+1} sur ${N}</div>${play()}${memo()}`;return}
+ if(V=='end'){const ok=score>=5,g=GAMES[G];let msg;
+  if(score===N)msg='Parfait ! Tu as tout juste !';else if(score>=6)msg='Très bien ! Tu as bien travaillé.';else if(score>=4)msg="C'est bien ! Tu peux encore t'entraîner.";else msg='Continue ! Recommence ce niveau. Lis bien les explications.';
+  const canNext=L<2&&(prof()||prog[G].u>L+1);
+  app.innerHTML=`<section class="end"><h2>${g.t} · ${g.lv[L].t} terminé</h2><p>Bravo ${esc(pname)}, voici ton score :</p><p class="res">${score} / ${N}</p>${stars(score)}<p>${msg}</p>${P.unlock?`<p><b>Le niveau ${L+2} est ouvert !</b></p>`:''}${!ok&&L<2?'<p>Pour ouvrir le niveau suivant, il faut 5 points sur 8.</p>':''}
+  <div class="row"><button class="btn alt" id="again">Recommencer</button>${canNext?'<button class="btn" id="nextlv">Niveau suivant →</button>':''}<button class="ghost" data-go="hub">Autres jeux</button><button class="ghost" data-go="results">Mes résultats</button></div><p style="margin-top:14px">Pour envoyer tes résultats à ton professeur, clique sur « Mes résultats ».</p></section>`;return}
+ if(V=='results'){app.innerHTML=`<div class="bar"><button class="ghost" data-go="hub">← Tous les jeux</button></div><div class="box"><h2>Les résultats de ${esc(pname)}</h2><p>Montre cet écran à ton professeur.</p>${log.length?`<div class="scroll"><table class="rtab"><thead><tr><th>Jeu</th><th>Niveau</th><th class="r">Score</th><th class="r">Date</th></tr></thead><tbody>${log.slice().reverse().map(r=>`<tr><td>${GAMES[r.g].t}</td><td>${r.l+1}</td><td class="r"><b>${r.s} / ${N}</b></td><td class="r">${r.d}</td></tr>`).join('')}</tbody></table></div>`:'<p>Tu n\'as pas encore joué.</p>'}
+  <div class="row" style="margin-top:12px">${ready()?`<a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" target="_blank" rel="noopener" href="${esc(FORM_URL.replace('APPLI',encodeURIComponent('Du plus petit au plus grand')).replace('PRENOM',encodeURIComponent(pname)).replace('RESULTATS',encodeURIComponent(resText())))}">Envoyer à mon professeur</a>`:''}<button class="btn ${ready()?'alt':''}" id="copy">Copier mes résultats</button></div>${ready()?'<p class="note" style="margin-top:10px">Une page s\'ouvre. Clique sur « Envoyer » en bas de la page.</p>':`<div class="warn"><p><b>Pour envoyer tes résultats à ton professeur, tu dois terminer au moins le niveau 2 de chaque jeu.</b></p><p>Il te reste ${todo().length} jeu${todo().length>1?'x':''} à terminer jusqu'au niveau 2.</p>${checklist()}</div>`}<div id="copymsg"></div></div>`;return}
+ if(V=='change'){app.innerHTML=`<div class="box"><h2>Changer d'élève</h2><div class="warn"><p>Les résultats de <b>${esc(pname)}</b> vont être effacés de cet ordinateur.</p><p>Tu veux continuer ?</p></div><div class="row" style="margin-top:14px"><button class="btn" id="wipe">Oui, changer d'élève</button><button class="ghost" data-go="hub">Non</button></div></div>`}}
+
+/* ---------- Une question ---------- */
+function vcard(it,extra=''){return`<div class="card ${extra}">${it.emo?`<span class="emo" aria-hidden="true">${it.emo}</span><span class="nm">${esc(it.name)}</span>`:''}<span class="val">${F(it)}</span></div>`}
+function tagH(it,attr,cls){return`<button class="tag ${cls||''}" ${attr}>${it.emo?`<span class="emo" aria-hidden="true">${it.emo}</span><small>${esc(it.name)}</small>`:''}${F(it)}</button>`}
+function play(){const q=deck[qi];let h='';
+ if(q.type=='sign'){const[a,b]=q.items,st=P.done?(P.good?'good':'bad'):'';
+  h=`<div class="qtext"><p>Regarde les 2 ${q.k=='prix'?'prix':'nombres'}.</p><p>Quel signe faut-il mettre au milieu ?</p></div>
+  <div class="vs">${vcard(a)}<div class="sbox ${st}">${P.pick?P.pick.replace('<','&lt;').replace('>','&gt;'):'?'}</div>${vcard(b)}</div>
+  <p class="lbl">Choisis le signe :</p><div class="opts">${['<','=','>'].map(s=>`<button class="opt ${P.done&&s==q.ans?'good':P.done&&s==P.pick?'bad':''}" data-sign="${s}" ${P.done?'disabled':''}><big>${s.replace('<','&lt;').replace('>','&gt;')}</big><small>${SW[s]}</small></button>`).join('')}</div>`}
+ else if(q.type=='pick'){h=`<div class="qtext"><p>Regarde les 2 articles.</p><p>Quel article est le ${q.w=='moins'?'moins cher':'plus cher'} ?</p></div>
+  <p class="lbl">Choisis l'article :</p><div class="opts">${q.items.map((it,i)=>`<button class="opt ${P.done&&i==q.ans?'good':P.done&&i==P.pick?'bad':''}" data-pick="${i}" ${P.done?'disabled':''}><big style="font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${it.emo}</big>${esc(it.name)}<br><span style="font-size:30px">${F(it)}</span></button>`).join('')}</div>`}
+ else{const asc=q.dir=='asc',pr=q.k=='prix',full=P.slots.every(x=>x!=null),sg=asc?'&lt;':'&gt;';
+  const what=pr?(asc?'du moins cher au plus cher':'du plus cher au moins cher'):(asc?'du plus petit au plus grand':'du plus grand au plus petit');
+  const caps=[asc?(pr?'le moins cher':'le plus petit'):(pr?'le plus cher':'le plus grand'),'','','',asc?(pr?'le plus cher':'le plus grand'):(pr?'le moins cher':'le plus petit')];
+  h=`<div class="qtext"><p>Range les ${pr?'prix':'nombres'} ${asc?'dans l\'ordre croissant':'dans l\'ordre décroissant'}.</p><p>Range ${what}. ${stair(q.dir)}</p></div>
+  <div class="shelf">${P.slots.map((ix,i)=>`<div class="cell"><div class="slot">${ix==null?`<span class="ph">${i+1}</span>`:tagH(q.items[ix],`data-slot="${i}" ${P.done?'disabled':''}`,P.done?(q.items[ix].v==q.items[q.order[i]].v?'good':'bad'):P.marks?P.marks[i]:'')}</div><span class="cap">${caps[i]}</span></div>${i<4?`<span class="sign" aria-hidden="true">${sg}</span>`:''}`).join('')}</div>
+  ${P.done?'':`<p class="help">Clique sur une étiquette. Elle va sur l'étagère.<br>Tu t'es trompé ? Clique encore dessus pour l'enlever.</p>`}
+  <div class="pool">${q.items.map((it,i)=>P.slots.includes(i)?'':tagH(it,`data-pool="${i}"`)).join('')}</div>
+  ${P.marks?`<div class="fb no" role="status"><p class="big">Presque !</p><p>Les étiquettes en rouge ne sont pas à la bonne place.</p><p>Les étiquettes en vert sont bien placées.</p><p><b>Corrige-toi !</b></p><div class="row" style="margin-top:10px"><button class="btn" id="fix">Je me corrige</button></div><p class="note" style="margin-top:8px">Les étiquettes rouges retournent en bas. Tu les places à nouveau.</p></div>`:''}
+  ${P.done||P.marks?'':`<div class="row"><button class="btn" id="check" ${full?'':'disabled'}>${P.tries?'Je vérifie encore':'Je vérifie'}</button></div>`}`}
+ if(!P.done)h+=`<div class="row" style="margin-top:12px"><button class="btn alt" id="hintbtn">Un indice</button></div>${P.hint?`<div class="hint">Indice : ${HINT[q.k]}</div>`:''}`;
+ if(P.done)h+=feedback(q);
+ return h}
+function feedback(q){const last=qi==N-1;let ok='',wrong='',ex=[],tb='';
+ const meth=METHOD[q.k].map(x=>`<li>${x}</li>`).join('');
+ if(q.type=='sign'){const[a,b]=q.items,d=diff(a,b);
+  ok=`${F(a)} ${q.ans.replace('<','&lt;').replace('>','&gt;')} ${F(b)} : ${F(a)} ${SW[q.ans]} ${F(b)}.`;
+  wrong=`<p>Ta réponse : <b>${F(a)} ${esc(P.pick)} ${F(b)}</b><br>La bonne réponse : <b>${F(a)} ${esc(q.ans)} ${F(b)}</b></p>`;
+  ex=[d.t,`Donc ${F(a)} ${SW[q.ans]} ${F(b)}.`,q.ans=='='?'':'Le signe : la pointe montre le plus petit nombre.'].filter(Boolean);tb=table(q.k,q.items,d);}
+ else if(q.type=='pick'){const[a,b]=q.items,d=diff(a,b),c=q.items[q.ans];
+  ok=`${esc(c.name)} : ${F(c)}. C'est le ${q.w=='moins'?'moins cher':'plus cher'}.`;
+  wrong=`<p>Ta réponse : <b>${esc(q.items[P.pick].name)}</b><br>La bonne réponse : <b>${esc(c.name)}</b></p>`;
+  ex=[d.t,`Donc ${F(a)} ${SW[sign(a,b)]} ${F(b)}.`,`Le ${q.w=='moins'?'moins cher':'plus cher'}, c'est ${q.w=='moins'?'le plus petit':'le plus grand'} prix : ${esc(c.name)}, ${F(c)}.`];tb=table(q.k,q.items,d)}
+ else{const it=q.items,o=q.order,sg=q.dir=='asc'?'&lt;':'&gt;',line=o.map(i=>F(it[i])).join(`  ${sg}  `);
+  ok=line;wrong=`<p>Les étiquettes en rouge ne sont pas à la bonne place.</p><p>La bonne réponse :</p><div class="answer">${line}</div>`;
+  for(let k=0;k<4;k++){const x=it[o[k]],y=it[o[k+1]];ex.push(`Place ${k+1} : <b>${F(x)}</b>. ${diff(x,y).t} Donc ${F(x)} ${sign(x,y).replace('<','&lt;').replace('>','&gt;')} ${F(y)}.`)}
+  ex.push(`Place 5 : <b>${F(it[o[4]])}</b>.`);tb=table(q.k,o.map(i=>it[i]),null,true)}
+ const next=`<div class="row" style="margin-top:12px"><button class="btn" id="next">${last?'Voir mon score':'Question suivante →'}</button></div>`;
+ if(P.good&&P.tries)return`<div class="fb ok" role="status"><p class="big">Bien corrigé !</p><p>${ok}</p><p>Tu as trouvé au 2e essai.</p><p>Le point compte seulement au 1er essai. La prochaine fois, tu vas y arriver du premier coup !</p>${next}</div>`;
+ if(P.good)return`<div class="fb ok" role="status"><p class="big">${P.praise}</p><p>${ok}</p>${next}</div>`;
+ return`<div class="fb no" role="status"><p class="big">Ce n'est pas la bonne réponse.</p><p>Ce n'est pas grave. Tu apprends !</p>${wrong}<p><b>La méthode :</b></p><ol>${meth}</ol><p><b>Explication :</b></p><ol>${ex.map(x=>`<li>${x}</li>`).join('')}</ol>${tb}${next}</div>`}
+
+function startLv(l){L=l;FLIP=rnd(0,1);const k=GAMES[G].lv[l].k;deck=Array.from({length:N},(_,i)=>G=='cmp'?qCmp(k):qRng(k,i));qi=0;score=0;res=[];newP();go('play')}
+function newP(){P={slots:[null,null,null,null,null],done:false,good:false,pick:null,hint:false,tries:0,marks:null,praise:pick(PRAISE)}}
+function finish(good){P.done=true;P.good=good;P.marks=null;const pt=good&&!P.tries;res.push(pt);if(pt)score++;render();const n=$('#next');if(n){n.focus({preventScroll:true});$('.fb')?.scrollIntoView({behavior:'smooth',block:'nearest'})}}
+function endLv(){const pg=prog[G];P.unlock=false;
+ if(pg.b[L]===undefined||score>pg.b[L])pg.b[L]=score;
+ if(score>=5&&L<2&&pg.u<L+2){pg.u=L+2;P.unlock=true}
+ const d=new Date();log.push({g:G,l:L,s:score,d:d.toLocaleDateString('fr-BE')+' '+d.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'})});MM.store.add('CLASSEMENT','Du plus petit au plus grand · '+GAMES[G].t,L,score,N,L===2?'Q301':'');save();go('end')}
+const FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLSfvhhmtO56FCApM3j4a2yCrwa5OcJmLTIIv9VjZib-mBOALmg/viewform?usp=pp_url&entry.667286545=APPLI&entry.1323283813=PRENOM&entry.2118595536=RESULTATS';
+const todo=()=>Object.keys(GAMES).filter(g=>!log.some(r=>r.g===g&&r.l>=1));
+const ready=()=>todo().length===0;
+const checklist=()=>`<ul style="list-style:none;padding:0;margin:10px 0">${Object.keys(GAMES).map(g=>{const ok=log.some(r=>r.g===g&&r.l>=1);return`<li style="padding:4px 0">${ok?'<b style="color:var(--mintInk)">✓ Fait</b>':'<b style="color:var(--coral)">○ À faire</b>'} : ${GAMES[g].t} · Niveau 2</li>`}).join('')}</ul>`;
+const resText=()=>`Prénom : ${pname}\n`+(log.length?log.map(r=>`${GAMES[r.g].t} · Niveau ${r.l+1} : ${r.s}/${N} (${r.d})`).join('\n'):'Pas encore de partie.');
+
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t||t.disabled)return;const d=t.dataset;
+ if(d.go){if(d.go==='results'){location.href='../resultats.html'+location.hash;return}go(d.go);return}
+ if(d.game){G=d.game;go('levels');return}
+ if(d.l!=null&&t.classList.contains('lv')){startLv(+d.l);return}
+ if(t.id=='again'){startLv(L);return}
+ if(t.id=='nextlv'){startLv(L+1);return}
+ if(t.id=='next'){if(qi<N-1){qi++;newP();go('play')}else endLv();return}
+ if(t.id=='hintbtn'){P.hint=true;render();return}
+ if(t.id=='wipe'){pname='';log=[];prog={};for(const g in GAMES)prog[g]={u:1,b:{}};save();go('name');return}
+ if(t.id=='copy'){const txt=resText(),m=$('#copymsg');const fall=()=>{m.innerHTML=`<p>Sélectionne le texte et copie-le :</p><textarea readonly>${esc(txt)}</textarea>`;m.querySelector('textarea').select()};
+  try{navigator.clipboard.writeText(txt).then(()=>{m.innerHTML='<p class="fb ok">Tes résultats sont copiés. Tu peux les coller dans un message à ton professeur.</p>'},fall)}catch(err){fall()}return}
+ if(V!='play'||P.done)return;const q=deck[qi];
+ if(d.sign){P.pick=d.sign;finish(d.sign==q.ans);return}
+ if(d.pick!=null){P.pick=+d.pick;finish(+d.pick==q.ans);return}
+ if(d.pool!=null){const i=P.slots.indexOf(null);if(i>=0)P.slots[i]=+d.pool;render();return}
+ if(d.slot!=null){P.slots[+d.slot]=null;P.marks=null;render();return}
+ if(t.id=='check'){const m=P.slots.map((ix,i)=>q.items[ix].v==q.items[q.order[i]].v?'good':'bad');
+  if(m.every(x=>x=='good')||P.tries)finish(m.every(x=>x=='good'));else{P.tries=1;P.marks=m;render();$('.fb')?.scrollIntoView({behavior:'smooth',block:'nearest'})}return}
+ if(t.id=='fix'){P.slots=P.slots.map((ix,i)=>P.marks[i]=='good'?ix:null);P.marks=null;render();return}
+});
+window.addEventListener('hashchange',()=>{if(V=='levels')render()});
+render();
+}
+</script>
+</body>
+</html>

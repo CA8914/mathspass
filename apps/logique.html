@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Problèmes de logique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: doux, encourageant, FALC (phrases courtes, une idée par ligne, « tu »)
+   IDEA: un petit détective qui remplit un tableau avec des ✓ et des ✗
+   PICTURE: un tableau à double entrée avec une loupe
+   COLOUR and TYPE: lavande, pêche, menthe, encre prune ; Atkinson Hyperlegible
+   LAYOUT: indices à gauche, tableau à droite ; une colonne sur téléphone */
+:root{color-scheme:light dark;
+--bg:light-dark(#f4f0fb,#1c1726);--card:light-dark(#fff,#2a2338);--ink:light-dark(#2e2541,#f2edf9);
+--soft:light-dark(#655a7a,#c3b9d6);--lav:light-dark(#e4dbf8,#3a3150);--peach:light-dark(#ffe6dc,#47302f);
+--coral:light-dark(#d9604c,#ff9f8b);--mint:light-dark(#d8f3e5,#21413a);--mintInk:light-dark(#1d6a49,#a3e6c6);
+--yel:light-dark(#fff1c9,#4a4025);--line:light-dark(#ddd3ee,#463c5e);--btn:light-dark(#5a4a8c,#cbbcf4);--btnInk:light-dark(#fff,#1c1726);
+--bag:light-dark(#8a79bd,#8f7fc6);--tint:light-dark(#f8f5fe,#30293f)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.6 "Atkinson Hyperlegible",Verdana,sans-serif;overflow-x:clip}
+main{max-width:980px;margin:0 auto;padding:0 max(4vw,16px) 48px}
+h1{font-size:clamp(30px,6vw,44px);line-height:1.1;margin:0 0 14px;text-wrap:balance}
+h2{font-size:28px;line-height:1.2;margin:0 0 8px}
+p{margin:0 0 6px}
+button,input{font:inherit}button{cursor:pointer}
+:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:center;padding:28px 0 18px}
+.hero svg{width:100%;height:auto;max-height:240px}
+.intro p{font-size:20px}
+.tag{display:inline-block;background:var(--lav);border-radius:999px;padding:2px 14px;font-size:16px;font-weight:700;margin-bottom:10px}
+.levels{display:grid;gap:14px;margin:12px 0 24px}
+.lv{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:16px;align-items:center;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:20px;padding:16px 18px;min-height:88px}
+.lv:not(:disabled):hover{border-color:var(--btn)}
+.lv:disabled{opacity:.55;cursor:not-allowed}
+.lv .num{width:64px;height:64px;border-radius:50%;background:var(--lav);display:grid;place-items:center;font-size:28px;font-weight:700}
+.lv b{display:block;font-size:22px}
+.lv small{color:var(--soft);font-size:17px}
+.stars{display:flex;gap:2px}.stars svg{width:24px;height:24px}
+.st-on{fill:#f0b84d}.st-off{fill:var(--line)}
+details{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 18px;margin:0 0 14px}
+summary{font-weight:700;cursor:pointer;min-height:32px}
+.memo ul{margin:8px 0;padding-left:1.2em}.memo li{margin:4px 0}
+.top{position:sticky;top:0;z-index:3;background:var(--bg);display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:14px 0 10px;border-bottom:2px solid var(--line);margin-bottom:16px}
+.score{background:var(--btn);color:var(--btnInk);border-radius:999px;padding:6px 18px;font-weight:700;font-size:20px}
+.ghost{background:none;border:2px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 16px;min-height:44px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:16px 0 4px}
+.dots{display:flex;gap:6px;width:100%}
+.dots i{flex:1;height:10px;border-radius:5px;background:var(--line)}
+.dots i.g{background:#6cc79a}.dots i.c{background:var(--btn)}
+.qn{color:var(--soft);font-size:17px}
+.qhead{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.qhead h2{font-size:26px;margin:0}
+.worth{display:flex;align-items:center;gap:8px;font-size:17px;color:var(--soft)}
+.worth .stars svg{width:22px;height:22px}
+.play{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:start}
+.panel{background:var(--card);border-radius:20px;padding:16px 18px;border-left:8px solid var(--lav)}
+.panel h3{margin:0 0 8px;font-size:21px}
+.clues{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.clue{display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;align-items:start;width:100%;text-align:left;background:var(--tint);color:var(--ink);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-size:20px;line-height:1.45}
+.clue .k{width:36px;height:36px;border-radius:50%;background:var(--lav);display:grid;place-items:center;font-weight:700;font-size:18px}
+.clue.done{color:var(--soft)}.clue.done .t{text-decoration:line-through;text-decoration-thickness:2px}
+.clue.done .k{background:var(--mint);color:var(--mintInk)}
+.clue.hl{border-color:#f0b84d;box-shadow:0 0 0 4px var(--yel)}
+.small{font-size:16px;color:var(--soft);margin-top:10px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px}
+.tools b{margin-right:4px}
+.tool{border:3px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;min-height:52px;padding:6px 16px;font-size:20px;font-weight:700;display:inline-flex;gap:8px;align-items:center}
+.tool .m{font-size:26px;line-height:1}
+.tool[data-t="1"] .m{color:var(--mintInk)}.tool[data-t="-1"] .m{color:var(--coral)}
+.tool[aria-pressed=true]{border-color:var(--btn);background:var(--lav);box-shadow:0 0 0 3px var(--lav)}
+.gridwrap{overflow-x:auto;padding:4px 2px 6px}
+table.grid{border-collapse:separate;border-spacing:6px}
+.grid thead th{vertical-align:bottom;text-align:center;font-size:15px;line-height:1.2;padding:6px 2px;border-radius:12px;font-weight:700;width:68px}
+.grid thead th .emo{display:block;font-size:36px;line-height:1.1;margin-bottom:2px}
+.grid tbody th{text-align:right;padding:0 10px;font-size:20px;border-radius:12px;white-space:nowrap}
+.grid th.on{background:var(--lav)}
+.emo{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.cell{width:64px;height:64px;border-radius:14px;border:3px solid var(--line);background:var(--card);font-size:34px;font-weight:700;display:grid;place-items:center;padding:0;color:var(--ink);line-height:1}
+.cell.cross{background:var(--tint)}
+.cell.v{background:var(--mint);border-color:#6cc79a;color:var(--mintInk)}
+.cell.x{color:var(--coral)}
+.cell.x.auto{color:light-dark(#e9a597,#a8665c)}
+.cell.wrong{border-color:var(--coral);background:var(--peach);animation:shake .35s}
+.cell.hl{box-shadow:0 0 0 4px #f0b84d;border-color:#f0b84d}
+.cell:disabled{cursor:default}
+.btn{background:var(--btn);color:var(--btnInk);border:0;border-radius:16px;padding:12px 26px;min-height:52px;font-weight:700;font-size:20px;text-decoration:none;display:inline-flex;align-items:center}
+.btn.alt{background:var(--lav);color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.hint{background:var(--yel);border-radius:14px;padding:12px 16px;margin:12px 0}
+.err{color:var(--coral);font-weight:700;margin:6px 0}
+.fb{border-radius:20px;padding:18px 20px;margin:16px 0;animation:pop .35s ease-out}
+.fb.ok{background:var(--mint)}.fb.ok .big{color:var(--mintInk)}
+.fb.no{background:var(--peach)}
+.fb.info{background:var(--lav)}
+.fb .big{font-size:26px;font-weight:700;margin-bottom:6px}
+.fb ul{margin:6px 0 4px;padding-left:1.2em}.fb li{margin:4px 0}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media(prefers-reduced-motion:reduce){.fb,.cell.wrong{animation:none}}
+.steps{background:var(--card);border-radius:18px;padding:12px 18px;margin-bottom:14px;border-left:8px solid var(--lav)}
+.name-in{width:100%;max-width:340px;font-size:26px;padding:10px 14px;border:3px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
+.name-in:focus{border-color:var(--btn);outline:none}
+.lbl{display:block;font-weight:700;margin-bottom:6px}
+.end{text-align:center;padding:30px 0}
+.end .stars{justify-content:center;margin:12px 0}.end .stars svg{width:56px;height:56px}
+.end .res{font-size:clamp(44px,10vw,64px);font-weight:700;line-height:1}
+.end .row{justify-content:center;margin-top:20px}
+.box{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:22px;margin:24px 0}
+.rtab{width:100%;border-collapse:collapse;margin:10px 0}
+.rtab th,.rtab td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+.rtab td.r,.rtab th.r{text-align:right;white-space:nowrap}
+.rtab th{font-size:16px;color:var(--soft)}
+textarea{width:100%;min-height:140px;font:16px/1.5 inherit;border:2px solid var(--line);border-radius:14px;padding:10px;background:var(--card);color:var(--ink)}
+.note{font-size:15px;color:var(--soft)}
+.warn{background:var(--peach);border-radius:16px;padding:14px 18px;margin-top:12px}
+.demo{display:inline-grid;grid-template-columns:auto 44px 44px;gap:4px;align-items:center;margin:8px 0;font-size:17px}
+.demo span{display:grid;place-items:center;height:44px;border-radius:10px;border:2px solid var(--line);background:var(--card);font-weight:700;font-size:22px}
+.demo .h{border:0;background:none;font-size:15px}.demo .n{border:0;background:none;justify-content:end;padding-right:8px;font-size:17px}
+.demo .v{background:var(--mint);color:var(--mintInk);border-color:#6cc79a}.demo .x{color:var(--coral)}
+@media(max-width:820px){.play{grid-template-columns:1fr}.gridwrap{display:flex;justify-content:center}}
+@media(max-width:600px){.hero{grid-template-columns:1fr;padding-top:20px}.hero svg{max-height:170px;order:-1}.lv{grid-template-columns:48px minmax(0,1fr)}.lv .num{width:48px;height:48px;font-size:22px}.lv .stars{grid-column:2}
+ .cell{width:50px;height:50px;font-size:28px;border-radius:12px}.grid thead th{width:52px;font-size:13px}.grid thead th .emo{font-size:28px}.grid tbody th{font-size:17px;padding:0 4px}table.grid{border-spacing:4px}.clue{font-size:18px}.tool{font-size:18px;padding:6px 12px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></symbol>
+<symbol id="hero" viewBox="0 0 320 240">
+  <circle cx="160" cy="122" r="105" fill="var(--lav)"/>
+  <ellipse cx="160" cy="214" rx="86" ry="10" fill="var(--line)"/>
+  <rect x="70" y="52" width="168" height="152" rx="20" fill="var(--card)" stroke="var(--bag)" stroke-width="4"/>
+  <g fill="var(--tint)" stroke="var(--line)" stroke-width="3">
+    <rect x="114" y="68" width="34" height="34" rx="8"/><rect x="154" y="68" width="34" height="34" rx="8"/><rect x="194" y="68" width="34" height="34" rx="8"/>
+    <rect x="114" y="110" width="34" height="34" rx="8"/><rect x="154" y="110" width="34" height="34" rx="8"/><rect x="194" y="110" width="34" height="34" rx="8"/>
+    <rect x="114" y="152" width="34" height="34" rx="8"/><rect x="154" y="152" width="34" height="34" rx="8"/><rect x="194" y="152" width="34" height="34" rx="8"/>
+  </g>
+  <rect x="154" y="68" width="34" height="34" rx="8" fill="var(--mint)" stroke="#6cc79a" stroke-width="3"/>
+  <rect x="114" y="152" width="34" height="34" rx="8" fill="var(--mint)" stroke="#6cc79a" stroke-width="3"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="5">
+    <path d="M162 85l7 7 12-14" stroke="var(--mintInk)"/><path d="M122 169l7 7 12-14" stroke="var(--mintInk)"/>
+    <path d="M124 78l14 14M138 78l-14 14M204 78l14 14M218 78l-14 14M124 120l14 14M138 120l-14 14M164 162l14 14M178 162l-14 14" stroke="var(--coral)"/>
+  </g>
+  <g fill="var(--bag)"><circle cx="92" cy="85" r="9"/><circle cx="92" cy="127" r="9"/><circle cx="92" cy="169" r="9"/></g>
+  <g transform="rotate(-20 240 150)"><circle cx="232" cy="140" r="30" fill="#fff" fill-opacity=".45" stroke="var(--coral)" stroke-width="9"/><rect x="226" y="172" width="13" height="44" rx="6" fill="var(--coral)"/></g>
+  <circle cx="58" cy="60" r="7" fill="#f0b84d"/><circle cx="270" cy="58" r="6" fill="#6cc79a"/><circle cx="52" cy="176" r="5" fill="var(--coral)"/>
+</symbol>
+</svg>
+
+<main>
+<section id="name" hidden>
+  <div class="hero">
+    <div class="intro">
+      <span class="tag">Je réfléchis comme un détective</span>
+      <h1>Problèmes de logique</h1>
+      <p>Bonjour !</p>
+      <p>Écris ton prénom.</p>
+      <p>Comme ça, ton professeur voit tes résultats.</p>
+      <form id="nameform" style="margin-top:14px">
+        <label class="lbl" for="pn">Ton prénom :</label>
+        <input class="name-in" id="pn" maxlength="30" autocomplete="off">
+        <div class="err" id="pnerr" hidden>Écris ton prénom pour commencer.</div>
+        <div class="row" style="margin-top:12px"><button class="btn">C'est parti !</button></div>
+      </form>
+    </div>
+    <svg role="img" aria-label="Un tableau avec des coches, des croix et une loupe"><use href="#hero"/></svg>
+  </div>
+</section>
+
+<section id="hub" hidden>
+  <div class="bar"><b id="hello"></b><div class="row"><button class="ghost" data-go="results">Mes résultats</button><a class="ghost" href="../index.html" onclick="this.href='../index.html'+location.hash" style="text-decoration:none;display:inline-flex;align-items:center">← Toutes les applications</a></div></div>
+  <div class="hero">
+    <div class="intro">
+      <span class="tag">Je réfléchis comme un détective</span>
+      <h1>Problèmes de logique</h1>
+      <p>Tu lis des indices.</p>
+      <p>Tu remplis un tableau avec des ✓ et des ✗.</p>
+      <p>Tu trouves ce qui va avec chaque enfant.</p>
+      <p><b>Choisis un niveau.</b></p>
+    </div>
+    <svg role="img" aria-label="Un tableau avec des coches, des croix et une loupe"><use href="#hero"/></svg>
+  </div>
+  <div class="levels" id="lvlist"></div>
+  <details id="howto"><summary>Comment jouer ?</summary><div class="how"></div></details>
+  <details><summary>Mon aide-mémoire</summary><div class="memo"></div></details>
+  <details><summary>Pour l'enseignant·e</summary>
+    <p class="note">3 niveaux. Chaque niveau compte 3 problèmes. Chaque problème vaut 3 points : l'élève perd 1 point par vérification fausse ou par indice demandé (minimum 1 point quand le problème est réussi). Le niveau suivant s'ouvre avec 5 points sur 9.</p>
+    <p class="note">Les problèmes sont créés au hasard à chaque partie. Ils ont toujours une seule solution, et on peut la trouver sans deviner : seulement avec les indices et la règle « un seul ✓ par ligne et par colonne ».</p>
+    <p class="note">Niveau 1 : tableau 3 × 3, indices « a » et « n'a pas ». Niveau 2 : tableau 4 × 4, indices négatifs, parfois doubles. Niveau 3 : tableau 5 × 5, indices de classement (poils, plumes, écailles ; avec ou sans ballon ; couleur ; chaud ou froid) L'élève met lui-même toutes les croix, à tous les niveaux.</p>
+    <p class="note">Compétence travaillée : lire et interpréter un tableau à double entrée (S206), et organiser un raisonnement en plusieurs étapes.</p>
+    <p class="note">Résultats : cette application fait partie du site MathsPass. Le prénom est écrit une seule fois pour tout le site. Chaque niveau terminé s'ajoute à l'écran « Mes résultats » du site, d'où l'élève envoie tout à son professeur. Pour ouvrir tous les niveaux, ajoute #prof à la fin de l'adresse.</p>
+  </details>
+</section>
+
+<section id="play" hidden>
+  <div class="top">
+    <button class="ghost" data-go="hub">← Niveaux</button>
+    <b id="lvname"></b>
+    <span class="score" id="score">Score : 0</span>
+    <div class="dots" id="dots"></div>
+  </div>
+  <div class="qhead"><div><div class="qn" id="qn"></div><h2 id="qtitle"></h2></div><div class="worth" id="worth"></div></div>
+  <div class="steps"><p>1. Lis un indice.</p><p>2. Choisis ✓ (oui) ou ✗ (non).</p><p>3. Clique sur la bonne case du tableau.</p><p id="autoinfo"></p></div>
+  <div class="play">
+    <div class="panel">
+      <h3>Les indices</h3>
+      <ol class="clues" id="clues"></ol>
+      <p class="small">Tu as utilisé un indice ? Clique dessus pour le barrer.</p>
+    </div>
+    <div>
+      <div class="tools" role="group" aria-label="Ce que je mets dans les cases">
+        <b>Je mets :</b>
+        <button class="tool" data-t="1" aria-pressed="false"><span class="m">✓</span> Oui</button>
+        <button class="tool" data-t="-1" aria-pressed="true"><span class="m">✗</span> Non</button>
+        <button class="tool" data-t="0" aria-pressed="false">Effacer</button>
+      </div>
+      <div class="gridwrap"><table class="grid" id="grid"></table></div>
+    </div>
+  </div>
+  <div class="row" style="margin-top:14px" id="actions">
+    <button class="btn" id="verify">Je vérifie</button>
+    <button class="btn alt" id="hintbtn">Un indice (−1 point)</button>
+    <button class="ghost" id="clear">Tout effacer</button>
+  </div>
+  <div class="hint" id="hintbox" hidden></div>
+  <div id="fb" role="status" aria-live="polite"></div>
+  <details><summary>Mon aide-mémoire</summary><div class="memo"></div></details>
+</section>
+
+<section id="end" class="end" hidden></section>
+
+<section id="results" hidden>
+  <div class="bar"><button class="ghost" data-go="hub">← Les niveaux</button></div>
+  <div class="box" id="resbox"></div>
+</section>
+</main>
+<footer class="note" style="text-align:center;padding:0 16px 28px">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+
+<script src="../shared/engine.js"></script>
+<script>
+{
+const $=s=>document.querySelector(s);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PRAISE=['Bravo !','Super !','Excellent !','Génial !','Tu as trouvé !','Parfait !','Très bien !','Bien joué !','Quel détective !','Magnifique !'];
+
+const NAMES=['Léa','Tom','Sami','Inès','Noah','Lina','Adam','Emma','Yanis','Zoé','Hugo','Nour','Maël','Sara','Ilyas','Jade','Rayan','Alice','Louis','Chloé','Mehdi','Clara','Théo','Aya','Nathan','Lou','Amine','Manon','Lucas','Yasmine','Arthur','Camille','Bilal','Julie','Enzo','Salma','Victor','Maya','Jules','Elif','Kenzo','Rose','Ayoub','Lisa','Malik','Eva','Gabriel','Nina','Ibrahim','Anna','Robin','Fatou','Oscar','Mila','Samuel','Hanna','Diego','Luna','Rania','Maxime'];
+let recent=[];
+
+/* ---------- Les thèmes ---------- */
+const TH={
+animaux:{q:'Quel animal a chaque enfant ?',col:"l'animal",
+ pos:(p,i)=>`${p} a ${i.u}.`,neg:(p,i)=>`${p} n'a pas ${i.n}.`,neg2:(p,a,b)=>`${p} n'a pas ${a.n} et pas ${b.n}.`,
+ g:{poils:{y:"L'animal de {p} a des poils.",n:"L'animal de {p} n'a pas de poils."},
+    plumes:{y:"L'animal de {p} a des plumes.",n:"L'animal de {p} n'a pas de plumes."},
+    ecailles:{y:"L'animal de {p} a des écailles.",n:"L'animal de {p} n'a pas d'écailles."}},
+ it:[{e:'🐶',nm:'chien',u:'un chien',n:'de chien',g:'poils'},{e:'🐱',nm:'chat',u:'un chat',n:'de chat',g:'poils'},
+  {e:'🐰',nm:'lapin',u:'un lapin',n:'de lapin',g:'poils'},{e:'🐹',nm:'hamster',u:'un hamster',n:'de hamster',g:'poils'},
+  {e:'🦜',nm:'perroquet',u:'un perroquet',n:'de perroquet',g:'plumes'},{e:'🐔',nm:'poule',u:'une poule',n:'de poule',g:'plumes'},
+  {e:'🦆',nm:'canard',u:'un canard',n:'de canard',g:'plumes'},{e:'🐟',nm:'poisson',u:'un poisson',n:'de poisson',g:'ecailles'},
+  {e:'🐍',nm:'serpent',u:'un serpent',n:'de serpent',g:'ecailles'},{e:'🦎',nm:'lézard',u:'un lézard',n:'de lézard',g:'ecailles'}]},
+sports:{q:'Quel sport fait chaque enfant ?',col:'le sport',
+ pos:(p,i)=>`${p} fait ${i.u}.`,neg:(p,i)=>`${p} ne fait pas ${i.n}.`,neg2:(p,a,b)=>`${p} ne fait pas ${a.n} et pas ${b.n}.`,
+ g:{ballon:{y:'Le sport de {p} se joue avec un ballon.',n:'Le sport de {p} se joue sans ballon.'},
+    sans:{y:'Le sport de {p} se joue sans ballon.',n:'Le sport de {p} se joue avec un ballon.'}},
+ it:[{e:'⚽',nm:'foot',u:'du foot',n:'de foot',g:'ballon'},{e:'🏀',nm:'basket',u:'du basket',n:'de basket',g:'ballon'},
+  {e:'🏐',nm:'volley',u:'du volley',n:'de volley',g:'ballon'},{e:'🏉',nm:'rugby',u:'du rugby',n:'de rugby',g:'ballon'},
+  {e:'🏊',nm:'natation',u:'de la natation',n:'de natation',g:'sans'},{e:'🥋',nm:'judo',u:'du judo',n:'de judo',g:'sans'},
+  {e:'🚴',nm:'vélo',u:'du vélo',n:'de vélo',g:'sans'},{e:'💃',nm:'danse',u:'de la danse',n:'de danse',g:'sans'}]},
+fruits:{q:'Quel est le fruit préféré de chaque enfant ?',col:'le fruit',
+ pos:(p,i)=>`Le fruit préféré de ${p} est ${i.u}.`,neg:(p,i)=>`Le fruit préféré de ${p} n'est pas ${i.u}.`,neg2:(p,a,b)=>`Le fruit préféré de ${p} n'est pas ${a.u} et pas ${b.u}.`,
+ g:{jaune:{y:'Le fruit préféré de {p} est jaune.',n:"Le fruit préféré de {p} n'est pas jaune."},
+    rouge:{y:'Le fruit préféré de {p} est rouge.',n:"Le fruit préféré de {p} n'est pas rouge."},
+    vert:{y:'Le fruit préféré de {p} est vert.',n:"Le fruit préféré de {p} n'est pas vert."}},
+ it:[{e:'🍌',nm:'banane',u:'la banane',g:'jaune'},{e:'🍋',nm:'citron',u:'le citron',g:'jaune'},{e:'🍍',nm:'ananas',u:"l'ananas",g:'jaune'},
+  {e:'🍎',nm:'pomme',u:'la pomme',g:'rouge'},{e:'🍓',nm:'fraise',u:'la fraise',g:'rouge'},{e:'🍒',nm:'cerise',u:'la cerise',g:'rouge'},
+  {e:'🥝',nm:'kiwi',u:'le kiwi',g:'vert'},{e:'🍐',nm:'poire',u:'la poire',g:'vert'}]},
+boissons:{q:'Quelle boisson boit chaque enfant au goûter ?',col:'la boisson',
+ pos:(p,i)=>`${p} boit ${i.u}.`,neg:(p,i)=>`${p} ne boit pas ${i.n}.`,neg2:(p,a,b)=>`${p} ne boit pas ${a.n} et pas ${b.n}.`,
+ g:{chaude:{y:'La boisson de {p} est chaude.',n:"La boisson de {p} n'est pas chaude."},
+    froide:{y:'La boisson de {p} est froide.',n:"La boisson de {p} n'est pas froide."}},
+ it:[{e:'☕',nm:'chocolat chaud',u:'du chocolat chaud',n:'de chocolat chaud',g:'chaude'},{e:'🍵',nm:'thé',u:'du thé',n:'de thé',g:'chaude'},
+  {e:'🧃',nm:'jus de pomme',u:'du jus de pomme',n:'de jus de pomme',g:'froide'},{e:'💧',nm:'eau',u:"de l'eau",n:"d'eau",g:'froide'},
+  {e:'🥤',nm:'soda',u:'du soda',n:'de soda',g:'froide'},{e:'🥛',nm:'lait froid',u:'du lait froid',n:'de lait froid',g:'froide'}]},
+musique:{q:'Quel instrument joue chaque enfant ?',col:"l'instrument",
+ pos:(p,i)=>`${p} joue ${i.u}.`,neg:(p,i)=>`${p} ne joue pas ${i.n}.`,neg2:(p,a,b)=>`${p} ne joue pas ${a.n} et pas ${b.n}.`,
+ it:[{e:'🎹',nm:'piano',u:'du piano',n:'de piano'},{e:'🎸',nm:'guitare',u:'de la guitare',n:'de guitare'},{e:'🥁',nm:'batterie',u:'de la batterie',n:'de batterie'},
+  {e:'🎻',nm:'violon',u:'du violon',n:'de violon'},{e:'🎺',nm:'trompette',u:'de la trompette',n:'de trompette'},{e:'🎷',nm:'saxophone',u:'du saxophone',n:'de saxophone'}]},
+couleurs:{q:'Quelle est la couleur préférée de chaque enfant ?',col:'la couleur',
+ pos:(p,i)=>`La couleur préférée de ${p} est ${i.u}.`,neg:(p,i)=>`La couleur préférée de ${p} n'est pas ${i.u}.`,neg2:(p,a,b)=>`La couleur préférée de ${p} n'est pas ${a.u} et pas ${b.u}.`,
+ it:[{e:'🟥',nm:'rouge',u:'le rouge'},{e:'🟦',nm:'bleu',u:'le bleu'},{e:'🟩',nm:'vert',u:'le vert'},{e:'🟨',nm:'jaune',u:'le jaune'},{e:'🟪',nm:'violet',u:'le violet'},{e:'🟧',nm:'orange',u:"l'orange"}]}};
+
+/* Négations regroupées : « Tom ne fait pas de foot, pas de judo et pas de vélo. » */
+Object.assign(TH.animaux,{nh:p=>`${p} n'a pas`,nk:'n'});Object.assign(TH.sports,{nh:p=>`${p} ne fait pas`,nk:'n'});
+Object.assign(TH.fruits,{nh:p=>`Le fruit préféré de ${p} n'est pas`,nk:'u'});Object.assign(TH.boissons,{nh:p=>`${p} ne boit pas`,nk:'n'});
+Object.assign(TH.musique,{nh:p=>`${p} ne joue pas`,nk:'n'});Object.assign(TH.couleurs,{nh:p=>`La couleur préférée de ${p} n'est pas`,nk:'u'});
+const NEGL=(T,p,l)=>{const w=l.map(i=>i[T.nk]);return`${T.nh(p)} ${w.length>1?w.slice(0,-1).join(', pas ')+' et pas '+w[w.length-1]:w[0]}.`};
+for(const T of Object.values(TH)){T.neg=(p,i)=>NEGL(T,p,[i]);T.neg2=(p,a,b)=>NEGL(T,p,[a,b])}
+/* « de Ilyas » → « d'Ilyas » */
+const VN=NAMES.filter(x=>/^[AEIOUÉÈÎ]/.test(x));
+const fix=t=>t.replace(new RegExp("\\bde ("+VN.join('|')+")(?![\\wéèëï])","g"),"d'$1");
+
+/* ---------- Les niveaux ---------- */
+const LV=[
+ {t:'Niveau 1',s:'3 enfants. Des indices faciles.',n:3,maxPos:1,types:['pos','neg'],maxC:4,auto:false},
+ {t:'Niveau 2',s:'4 enfants. Des indices avec « pas ».',n:4,maxPos:1,types:['pos','neg','neg2'],maxC:6,auto:false},
+ {t:'Niveau 3',s:'5 enfants. Des indices plus difficiles.',n:5,maxPos:0,types:['neg','neg2','prop','propn'],maxC:9,auto:false,props:true}];
+const NP=3,MAXP=3,TOT=NP*MAXP;
+
+/* ---------- Résolution « sans deviner » ---------- */
+function propagate(clues,n){const G=Array.from({length:n},()=>Array(n).fill(0));
+ const V=(r,c)=>{G[r][c]=1;for(let k=0;k<n;k++){if(k!==c&&G[r][k]===0)G[r][k]=-1;if(k!==r&&G[k][c]===0)G[k][c]=-1}};
+ for(const cl of clues){for(const[r,c]of cl.X)if(G[r][c]===0)G[r][c]=-1;for(const[r,c]of cl.V)V(r,c)}
+ let ch=true;while(ch){ch=false;
+  for(let r=0;r<n;r++){if(G[r].includes(1))continue;const f=G[r].map((v,c)=>v===0?c:-1).filter(c=>c>=0);if(f.length===1){V(r,f[0]);ch=true}}
+  for(let c=0;c<n;c++){const col=G.map(row=>row[c]);if(col.includes(1))continue;const f=col.map((v,r)=>v===0?r:-1).filter(r=>r>=0);if(f.length===1){V(f[0],c);ch=true}}}
+ return G}
+const known=G=>G.flat().filter(v=>v!==0).length;
+const solved=G=>G.every(r=>r.includes(1));
+
+function gen(L,theme,avoid=new Set()){const cfg=LV[L],n=cfg.n,T=TH[theme];
+ const free=NAMES.filter(x=>!avoid.has(x)),namePool=free.length>=n?free:NAMES;
+ for(let tries=0;tries<400;tries++){
+  const ppl=shuf(namePool).slice(0,n),items=shuf(T.it).slice(0,n);
+  if(cfg.props&&new Set(items.map(i=>i.g)).size<2)continue;
+  const sol=shuf([...Array(n).keys()]);
+  let C=[];const seen=new Set();const add=c=>{if(!seen.has(c.t)){seen.add(c.t);C.push(c)}};
+  for(let r=0;r<n;r++){const p=ppl[r],s=sol[r];
+   if(cfg.types.includes('pos'))add({k:'pos',t:T.pos(p,items[s]),X:[],V:[[r,s]],w:Math.random()+.3});
+   const others=[...Array(n).keys()].filter(c=>c!==s);
+   if(cfg.types.includes('neg'))for(const c of others)add({k:'neg',t:T.neg(p,items[c]),X:[[r,c]],V:[],w:Math.random()});
+   if(cfg.types.includes('neg2'))for(let a=0;a<others.length;a++)for(let b=a+1;b<others.length;b++)
+    add({k:'neg2',t:T.neg2(p,items[others[a]],items[others[b]]),X:[[r,others[a]],[r,others[b]]],V:[],w:Math.random()-.25});
+   if(cfg.types.includes('prop')&&T.g){const g=items[s].g,X=items.map((it,c)=>it.g!==g?[r,c]:null).filter(Boolean);
+    if(X.length)add({k:'prop',t:T.g[g].y.replace('{p}',p),X,V:[],w:Math.random()-.6})}
+   if(cfg.types.includes('propn')&&T.g){for(const G of new Set(items.map(i=>i.g))){if(G===items[s].g)continue;
+    const X=items.map((it,c)=>it.g===G?[r,c]:null).filter(Boolean);add({k:'prop',t:T.g[G].n.replace('{p}',p),X,V:[],w:Math.random()-.5})}}}
+  C.sort((a,b)=>a.w-b.w);
+  const cov=c=>{const z=c.X.map(([r,q])=>r+','+q);for(const[r,q]of c.V)for(let k=0;k<n;k++){z.push(r+','+k);z.push(k+','+q)}return z};
+  for(const c of C){c.cov=cov(c);c.who=(c.X[0]||c.V[0])[0]}
+  let use=[],pos=0;const taken=new Set(),propWho=new Set();
+  for(const c of C){if(c.k==='pos'&&pos>=cfg.maxPos)continue;
+   if(c.cov.some(z=>taken.has(z)))continue;
+   if(c.k==='prop'&&propWho.has(c.who))continue;
+   const before=known(propagate(use,n)),after=known(propagate(use.concat([c]),n));
+   if(after>before){use.push(c);c.cov.forEach(z=>taken.add(z));if(c.k==='prop')propWho.add(c.who);if(c.k==='pos')pos++;if(solved(propagate(use,n)))break}}
+  if(!solved(propagate(use,n)))continue;
+  for(const c of shuf(use)){const rest=use.filter(x=>x!==c);if(solved(propagate(rest,n)))use=rest}
+  if(use.length>cfg.maxC||use.length<2)continue;
+  if(cfg.props&&use.filter(c=>c.k==='prop').length<2)continue;
+  const byP={};use=use.filter(c=>{if(c.k==='neg'||c.k==='neg2'){(byP[c.who]=byP[c.who]||[]).push(c);return false}return true});
+  for(const w in byP){const X=byP[w].flatMap(c=>c.X).sort((a,b)=>a[1]-b[1]);use.push({k:'neg',t:NEGL(T,ppl[w],X.map(([,c])=>items[c])),X,V:[]})}
+  use.forEach(c=>c.t=fix(c.t));
+  return{theme,T,ppl,items,sol,clues:shuf(use),n,auto:cfg.auto}}
+ return null}
+
+/* ---------- Prénom, progrès, résultats ---------- */
+let pname='',log=[],prog={u:1,b:{}};
+try{pname=localStorage.getItem('mm-name')||'';log=JSON.parse(localStorage.getItem('lg-log')||'[]');prog=JSON.parse(localStorage.getItem('lg-prog')||'null')||{u:1,b:{}}}catch(e){}
+const save=()=>{try{localStorage.setItem('mm-name',pname);localStorage.setItem('lg-log',JSON.stringify(log));localStorage.setItem('lg-prog',JSON.stringify(prog))}catch(e){}};
+const prof=()=>location.hash==='#prof';
+
+const MEMO=`<ul>
+<li><b>✓</b> veut dire <b>oui</b>. <b>✗</b> veut dire <b>non</b>.</li>
+<li>Dans chaque ligne, il y a <b>un seul ✓</b>.</li>
+<li>Dans chaque colonne, il y a <b>un seul ✓</b>.</li>
+<li>Tu mets un ✓ ? Alors tu mets des ✗ dans les autres cases de la ligne et de la colonne.</li>
+<li>Dans une ligne, il reste une seule case vide ? C'est le ✓ !</li>
+<li>« L'animal de Léa a des plumes » : tu mets un ✗ sur tous les animaux sans plumes.</li>
+</ul>`;
+const HOW=`<p style="margin-top:8px">Exemple : Léa et Tom ont un animal.</p>
+<p>Indice : <b>Léa n'a pas de chat.</b></p>
+<div class="demo" aria-hidden="true"><span class="h"></span><span class="h emo">🐶</span><span class="h emo">🐱</span>
+<span class="n">Léa</span><span class="v">✓</span><span class="x">✗</span>
+<span class="n">Tom</span><span class="x">✗</span><span class="v">✓</span></div>
+<p>1. Tu mets un ✗ dans la case Léa – chat.</p>
+<p>2. Il reste une seule case pour Léa : le chien. Tu mets un ✓.</p>
+<p>3. Le chien est à Léa. Donc Tom n'a pas le chien : ✗.</p>
+<p>4. Tom a le chat : ✓.</p>`;
+document.querySelectorAll('.memo').forEach(m=>m.innerHTML=MEMO);
+document.querySelectorAll('.how').forEach(m=>m.innerHTML=HOW);
+
+const starsN=s=>`<span class="stars" aria-label="${s} étoile${s>1?'s':''} sur 3">${[0,1,2].map(i=>`<svg viewBox="0 0 24 24"><use href="#star" class="${i<s?'st-on':'st-off'}"/></svg>`).join('')}</span>`;
+const starsOf=sc=>sc>=TOT?3:sc>=7?2:sc>=5?1:0;
+function show(id){['name','hub','play','end','results'].forEach(s=>$('#'+s).hidden=s!==id);window.scrollTo(0,0)}
+
+function hub(){if(!pname){show('name');$('#pn').focus();return}
+ $('#hello').textContent=`Bonjour ${pname} !`;const open=prof()?3:prog.u;
+ $('#lvlist').innerHTML=LV.map((l,i)=>`<button class="lv" data-l="${i}" ${i>=open?'disabled':''}><span class="num">${i+1}</span><span><b>${l.t}</b><small>${l.s}${i>=open?' · Fermé : réussis le niveau '+i+' pour l\'ouvrir':''}</small></span>${prog.b[i]!==undefined?starsN(starsOf(prog.b[i])):''}</button>`).join('');
+ $('#howto').open=!log.length;
+ show('hub')}
+
+/* ---------- Le jeu ---------- */
+let lv=0,probs=[],pi=0,score=0,res=[],P=null,S=[],AUTO=[],tool=-1,pts=MAXP,done=false,clueDone=new Set();
+function start(l){lv=l;const pool=shuf(Object.keys(TH).filter(k=>!LV[l].props||TH[k].g));
+ const avoid=new Set(recent);probs=[0,1,2].map(k=>{const p=gen(l,pool[k%pool.length],avoid);p.ppl.forEach(x=>avoid.add(x));return p});
+ recent=probs.flatMap(p=>p.ppl);pi=0;score=0;res=[];
+ $('#lvname').textContent=`Problèmes de logique · ${LV[l].t}`;show('play');load()}
+function load(){P=probs[pi];const n=P.n;S=Array.from({length:n},()=>Array(n).fill(0));AUTO=Array.from({length:n},()=>Array(n).fill(null));
+ pts=MAXP;done=false;clueDone=new Set();setTool(-1);
+ $('#qn').textContent=`Problème ${pi+1} sur ${NP}`;$('#qtitle').textContent=P.T.q;
+ $('#autoinfo').innerHTML='Tu mets un ✓ ? Alors mets aussi des ✗ dans les autres cases de la ligne et de la colonne.';
+ $('#clues').innerHTML=P.clues.map((c,k)=>`<li><button class="clue" data-c="${k}"><span class="k">${k+1}</span><span class="t">${c.t}</span></button></li>`).join('');
+ $('#grid').innerHTML=`<thead><tr><th></th>${P.items.map((it,c)=>`<th data-col="${c}"><span class="emo" aria-hidden="true">${it.e}</span>${it.nm}</th>`).join('')}</tr></thead><tbody>${P.ppl.map((p,r)=>`<tr><th data-row="${r}">${p}</th>${P.items.map((it,c)=>`<td><button class="cell" data-r="${r}" data-c="${c}"></button></td>`).join('')}</tr>`).join('')}</tbody>`;
+ $('#hintbox').hidden=true;$('#fb').innerHTML='';$('#actions').hidden=false;
+ render();bar()}
+function bar(){$('#score').textContent=`Score : ${score}`;$('#dots').innerHTML=Array.from({length:NP},(_,k)=>`<i class="${k<res.length?'g':k===pi?'c':''}"></i>`).join('');
+ $('#worth').innerHTML=done?'':`Ce problème vaut : ${starsN(pts)}`}
+function render(){document.querySelectorAll('.cell').forEach(b=>{const r=+b.dataset.r,c=+b.dataset.c,v=S[r][c];
+ b.textContent=v===1?'✓':v===-1?'✗':'';b.classList.toggle('v',v===1);b.classList.toggle('x',v===-1);b.classList.toggle('auto',v===-1&&AUTO[r][c]!==null);
+ b.setAttribute('aria-label',`${P.ppl[r]} et ${P.items[c].nm} : ${v===1?'oui':v===-1?'non':'vide'}`);b.disabled=done})}
+function setTool(t){tool=t;document.querySelectorAll('.tool').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.t===t)))}
+function clearAuto(r,c){const key=r+','+c;for(let i=0;i<P.n;i++)for(let j=0;j<P.n;j++)if(AUTO[i][j]===key){AUTO[i][j]=null;if(S[i][j]===-1)S[i][j]=0}}
+function clickCell(r,c){if(done)return;const cur=S[r][c];
+ if(cur===1)clearAuto(r,c);
+ AUTO[r][c]=null;
+ if(tool===0||cur===tool)S[r][c]=0;
+ else{S[r][c]=tool;
+  if(tool===1&&P.auto){const key=r+','+c;for(let k=0;k<P.n;k++){if(k!==c&&S[r][k]===0){S[r][k]=-1;AUTO[r][k]=key}if(k!==r&&S[k][c]===0){S[k][c]=-1;AUTO[k][c]=key}}}}
+ document.querySelectorAll('.cell.wrong,.cell.hl,.clue.hl').forEach(x=>x.classList.remove('wrong','hl'));
+ if(!$('#fb .ok'))$('#fb').innerHTML='';
+ render()}
+function cellEl(r,c){return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`)}
+const cellName=(r,c)=>`<b>${P.ppl[r]}</b> – <b>${P.items[c].nm}</b>`;
+
+function verify(){if(done)return;const n=P.n;$('#hintbox').hidden=true;
+ for(let r=0;r<n;r++){const k=S[r].filter(v=>v===1).length;
+  if(k>1)return info(`Il y a ${k} ✓ dans la ligne de ${P.ppl[r]}.`,'Il faut un seul ✓ dans chaque ligne.')}
+ for(let c=0;c<n;c++){const k=S.filter(row=>row[c]===1).length;
+  if(k>1)return info(`Il y a ${k} ✓ dans la colonne ${P.items[c].nm}.`,'Il faut un seul ✓ dans chaque colonne.')}
+ const miss=P.ppl.filter((p,r)=>!S[r].includes(1));
+ if(miss.length)return info("Ton tableau n'est pas fini.",`Il manque un ✓ pour : ${miss.join(', ')}.`,'Tu ne perds pas de point. Continue !');
+ const wrong=[];for(let r=0;r<n;r++)for(let c=0;c<n;c++){const good=P.sol[r]===c;if((S[r][c]===1&&!good)||(S[r][c]===-1&&good))wrong.push([r,c])}
+ if(wrong.length){pts=Math.max(1,pts-1);bar();
+  wrong.forEach(([r,c])=>cellEl(r,c).classList.add('wrong'));
+  $('#fb').innerHTML=`<div class="fb no"><p class="big">Ce n'est pas encore juste.</p><p>Ce n'est pas grave. Tu apprends !</p><p>Les cases fausses sont en orange : il y en a ${wrong.length}.</p><p>Change ces cases. Relis bien les indices.</p><p>Puis clique encore sur « Je vérifie ».</p></div>`;return}
+ done=true;score+=pts;res.push(pts);bar();render();$('#actions').hidden=true;
+ const last=pi===NP-1;
+ $('#fb').innerHTML=`<div class="fb ok"><p class="big">${pick(PRAISE)}</p><p>Tu gagnes ${pts} point${pts>1?'s':''}.</p><p><b>La solution :</b></p><ul>${P.ppl.map((p,r)=>`<li><span class="emo">${P.items[P.sol[r]].e}</span> ${fix(P.T.pos(p,P.items[P.sol[r]]))}</li>`).join('')}</ul><div class="row" style="margin-top:12px"><button class="btn" id="next">${last?'Voir mon score':'Problème suivant →'}</button></div></div>`;
+ $('#next').focus()}
+function info(...lines){$('#fb').innerHTML=`<div class="fb info"><p class="big">${lines[0]}</p>${lines.slice(1).map(l=>`<p>${l}</p>`).join('')}</div>`}
+
+/* ---------- Indice : la prochaine étape logique ---------- */
+function hint(){if(done)return;const n=P.n,box=$('#hintbox');
+ document.querySelectorAll('.cell.hl,.clue.hl').forEach(x=>x.classList.remove('hl'));
+ const say=(html,cells=[],clue=null,cost=true)=>{if(cost){pts=Math.max(1,pts-1);bar()}box.innerHTML='<b>Indice :</b> '+html;box.hidden=false;
+  cells.forEach(([r,c])=>cellEl(r,c).classList.add('hl'));if(clue!==null)document.querySelector(`.clue[data-c="${clue}"]`).classList.add('hl')};
+ for(let r=0;r<n;r++)for(let c=0;c<n;c++){const good=P.sol[r]===c;
+  if((S[r][c]===1&&!good)||(S[r][c]===-1&&good))return say(`Attention, une case est fausse : ${cellName(r,c)}. Elle est entourée en jaune. Efface-la.`,[[r,c]])}
+ for(let k=0;k<P.clues.length;k++){const cl=P.clues[k];
+  const v=cl.V.find(([r,c])=>S[r][c]!==1);if(v)return say(`Relis l'indice n°${k+1}. Mets un ✓ dans la case ${cellName(...v)}.`,[v],k);
+  const x=cl.X.find(([r,c])=>S[r][c]!==-1);if(x)return say(`Relis l'indice n°${k+1}. Il te dit : mets un ✗ dans la case ${cellName(...x)}.`,[x],k)}
+ for(let r=0;r<n;r++){const c=S[r].indexOf(1);if(c<0)continue;const e=S[r].map((v,j)=>v===0?j:-1).filter(j=>j>=0);
+  if(e.length)return say(`Dans la ligne de ${P.ppl[r]}, il y a déjà un ✓. Mets un ✗ dans les autres cases de la ligne.`,e.map(j=>[r,j]))}
+ for(let c=0;c<n;c++){const r=S.findIndex(row=>row[c]===1);if(r<0)continue;const e=S.map((row,i)=>row[c]===0?i:-1).filter(i=>i>=0);
+  if(e.length)return say(`Dans la colonne ${P.items[c].nm}, il y a déjà un ✓. Mets un ✗ dans les autres cases de la colonne.`,e.map(i=>[i,c]))}
+ for(let r=0;r<n;r++){if(S[r].includes(1))continue;const e=S[r].map((v,j)=>v===0?j:-1).filter(j=>j>=0);
+  if(e.length===1)return say(`Dans la ligne de ${P.ppl[r]}, il reste une seule case vide. Mets un ✓ dedans.`,[[r,e[0]]])}
+ for(let c=0;c<n;c++){if(S.some(row=>row[c]===1))continue;const e=S.map((row,i)=>row[c]===0?i:-1).filter(i=>i>=0);
+  if(e.length===1)return say(`Dans la colonne ${P.items[c].nm}, il reste une seule case vide. Mets un ✓ dedans.`,[[e[0],c]])}
+ say('Ton tableau est fini. Clique sur « Je vérifie ».',[],null,false)}
+
+/* ---------- Fin de niveau ---------- */
+function end(){const ok=score>=5;let msg;
+ if(score===TOT)msg='Parfait ! Tu as tout juste du premier coup !';else if(score>=7)msg='Très bien ! Tu as bien réfléchi.';else if(score>=5)msg="C'est bien ! Tu peux encore t'entraîner.";else msg='Continue ! Recommence ce niveau. Utilise l\'aide-mémoire.';
+ if(prog.b[lv]===undefined||score>prog.b[lv])prog.b[lv]=score;
+ const d=new Date();log.push({l:lv,s:score,d:d.toLocaleDateString('fr-BE')+' '+d.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'})});MM.store.add('LOGIQUE','Problèmes de logique',lv,score,TOT);
+ let um='';if(ok&&lv<2&&prog.u<lv+2){prog.u=lv+2;um=`<p><b>Le niveau ${lv+2} est ouvert !</b></p>`}
+ save();const canNext=lv<2&&(prof()||prog.u>lv+1);
+ $('#end').innerHTML=`<h2>${LV[lv].t} terminé</h2><p>Bravo ${esc(pname)}, voici ton score :</p><p class="res">${score} / ${TOT}</p>${starsN(starsOf(score))}<p>${msg}</p>${um}${!ok&&lv<2?'<p>Pour ouvrir le niveau suivant, il faut 5 points sur 9.</p>':''}
+ <div class="row"><button class="btn alt" id="again">Recommencer</button>${canNext?'<button class="btn" id="nextlv">Niveau suivant →</button>':''}<button class="ghost" data-go="hub">Les niveaux</button><button class="ghost" data-go="results">Mes résultats</button></div>
+ <p style="margin-top:14px">Pour envoyer tes résultats à ton professeur, clique sur « Mes résultats ».</p>`;
+ show('end')}
+
+/* Lien pré-rempli du formulaire de l'enseignante (voir « Envoi des résultats »). */
+const FORM_URL='';
+function resText(){return`Prénom : ${pname}\n`+(log.length?log.map(r=>`Problèmes de logique · Niveau ${r.l+1} : ${r.s}/${TOT} (${r.d})`).join('\n'):'Pas encore de partie.')}
+function results(){
+ $('#resbox').innerHTML=`<h2>Les résultats de ${esc(pname)}</h2><p>Montre cet écran à ton professeur.</p>`+
+ (log.length?`<table class="rtab"><thead><tr><th>Niveau</th><th class="r">Score</th><th class="r">Date</th></tr></thead><tbody>${log.slice().reverse().map(r=>`<tr><td>Niveau ${r.l+1}</td><td class="r"><b>${r.s} / ${TOT}</b></td><td class="r">${r.d}</td></tr>`).join('')}</tbody></table>`:'<p>Tu n\'as pas encore joué.</p>')+
+ `<div class="row" style="margin-top:12px">${log.length?`<a class="btn" target="_blank" rel="noopener" href="${esc(FORM_URL.replace('APPLI',encodeURIComponent('Problèmes de logique')).replace('PRENOM',encodeURIComponent(pname)).replace('RESULTATS',encodeURIComponent(resText())))}">Envoyer à mon professeur</a>`:''}<button class="btn alt" id="copy">Copier mes résultats</button></div>${log.length?'<p class="note" style="margin-top:10px">Une page s\'ouvre. Clique sur « Envoyer » en bas de la page.</p>':'<div class="warn"><p>Pour envoyer tes résultats, termine d\'abord un niveau.</p></div>'}<div id="copymsg"></div>`;
+ show('results')}
+function change(){$('#resbox').innerHTML=`<h2>Changer d'élève</h2><div class="warn"><p>Les résultats de <b>${esc(pname)}</b> vont être effacés de cet ordinateur.</p><p>Tu veux continuer ?</p></div><div class="row" style="margin-top:14px"><button class="btn" id="wipe">Oui, changer d'élève</button><button class="ghost" data-go="hub">Non</button></div>`;show('results')}
+
+/* ---------- Événements ---------- */
+document.getElementById('nameform').addEventListener('submit',e=>{e.preventDefault();const v=$('#pn').value.trim();if(!v){$('#pnerr').hidden=false;return}pname=v;save();hub()});
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const go=t.dataset.go;
+ if(go==='hub')hub();else if(go==='results')location.href='../resultats.html'+location.hash;else if(go==='change')change();
+ else if(t.classList.contains('lv'))start(+t.dataset.l);
+ else if(t.classList.contains('tool'))setTool(+t.dataset.t);
+ else if(t.classList.contains('cell'))clickCell(+t.dataset.r,+t.dataset.c);
+ else if(t.classList.contains('clue')){const k=+t.dataset.c;t.classList.toggle('done');t.classList.remove('hl')}
+ else if(t.id==='verify')verify();
+ else if(t.id==='hintbtn')hint();
+ else if(t.id==='clear'){if(done)return;S=S.map(r=>r.map(()=>0));AUTO=AUTO.map(r=>r.map(()=>null));$('#fb').innerHTML='';$('#hintbox').hidden=true;document.querySelectorAll('.hl,.wrong').forEach(x=>x.classList.remove('hl','wrong'));render()}
+ else if(t.id==='next'){if(pi<NP-1){pi++;load();window.scrollTo(0,0)}else end()}
+ else if(t.id==='again')start(lv);
+ else if(t.id==='nextlv')start(lv+1);
+ else if(t.id==='copy'){const txt=resText(),m=$('#copymsg');
+  const fall=()=>{m.innerHTML=`<p>Sélectionne le texte et copie-le :</p><textarea readonly>${esc(txt)}</textarea>`;m.querySelector('textarea').select()};
+  try{navigator.clipboard.writeText(txt).then(()=>{m.innerHTML='<p class="fb ok">Tes résultats sont copiés. Tu peux les coller dans un message à ton professeur.</p>'},fall)}catch(err){fall()}}
+ else if(t.id==='wipe'){pname='';log=[];prog={u:1,b:{}};save();$('#pn').value='';hub()}});
+/* Surligner la ligne et la colonne de la case visée */
+function lite(b){document.querySelectorAll('.grid th.on,.cell.cross').forEach(x=>x.classList.remove('on','cross'));if(!b)return;const r=b.dataset.r,c=b.dataset.c;
+ document.querySelector(`.grid th[data-row="${r}"]`).classList.add('on');document.querySelector(`.grid th[data-col="${c}"]`).classList.add('on');
+ document.querySelectorAll(`.cell[data-r="${r}"],.cell[data-c="${c}"]`).forEach(x=>{if(x!==b)x.classList.add('cross')})}
+document.addEventListener('pointerover',e=>{const b=e.target.closest('.cell');if(b)lite(b);else if(!e.target.closest('.grid'))lite(null)});
+document.addEventListener('focusin',e=>{const b=e.target.closest('.cell');lite(b||null)});
+window.addEventListener('hashchange',()=>{if(!$('#hub').hidden)hub()});
+hub();
+}
+</script>
+</body>
+</html>

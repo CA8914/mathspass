@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N204 · J'additionne plusieurs nombres</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="../shared/engine.js"></script>
+<script>
+{
+const {R,pick,shuf,G,D,E,col}=MM;
+const sumQ=(nums,ctx)=>{const t=nums.reduce((a,b)=>a+b,0);
+ return{big:`<div class="big">${nums.map(G).join(' + ')} = ?</div>`,text:ctx||['Calcule la somme.','Combien ça fait ?'],kind:'num',ans:t,fmt:G,
+ hint:'Pose le calcul en colonnes. Les unités sous les unités. Commence par la droite.',ok:`${nums.map(G).join(' + ')} = ${G(t)}`,
+ ex:['Tu poses le calcul en colonnes : unités sous unités, dizaines sous dizaines…','Tu additionnes de droite à gauche. N\'oublie pas les retenues.',`<span class="calc">${nums.map(G).join(' + ')} = ${G(t)}</span>`],
+ exHtml:col(nums.map((v,i)=>[i?'+':'',v]),t)}};
+const q2=()=>sumQ([R(120,4999),R(25,999)]);
+const q2b=()=>sumQ([R(1000,9999),R(1000,9999)]);
+const qN=(n,lo,hi)=>()=>sumQ(Array.from({length:n},()=>R(lo,hi)));
+const qMix=()=>sumQ(shuf([R(10000,99999),R(1000,9999),R(100,999),R(10,99)].slice(0,R(3,4))));
+const qCtx=()=>{const v=[R(1200,9800),R(1200,9800),R(1200,9800)];
+ return sumQ(v,[`Un festival dure 3 jours.`,`Vendredi : ${G(v[0])} visiteurs. Samedi : ${G(v[1])} visiteurs. Dimanche : ${G(v[2])} visiteurs.`,'Combien de visiteurs en tout ?'])};
+/* dépassement : sommes de nombres décimaux, et terme manquant */
+const qDec=()=>{const n=R(3,4),c=Array.from({length:n},()=>pick([R(1,99)*10,R(101,9999),R(1001,49999)]));const v=c.map(x=>x/100),t=c.reduce((a,b)=>a+b,0)/100;
+ return{big:`<div class="big">${v.map(x=>D(x)).join(' + ')} = ?</div>`,text:['Calcule la somme.','Attention aux virgules !'],kind:'num',ans:t,
+ hint:'Les virgules l\'une sous l\'autre. Astuce : écris 2 chiffres après chaque virgule (3,5 = 3,50).',ok:`${v.map(x=>D(x)).join(' + ')} = ${D(t)}`,
+ ex:['Tu poses le calcul en colonnes. Les virgules sont l\'une sous l\'autre.','Astuce : tu écris 2 chiffres après la virgule. 3,5 = 3,50.','Tu additionnes de droite à gauche. Tu remets la virgule au même endroit.',`<span class="calc">${v.map(x=>D(x)).join(' + ')} = ${D(t)}</span>`],
+ exHtml:col(v.map((x,i)=>[i?'+':'',x]),t,2)}};
+const qPrix=()=>{const it=shuf([['un pantalon',R(1999,4999)],['un pull',R(1499,3999)],['des chaussettes',R(399,999)],['une casquette',R(899,1999)],['un t-shirt',R(599,1599)]]).slice(0,3),t=it.reduce((a,b)=>a+b[1],0);
+ return{big:`<div class="big" style="font-size:clamp(22px,4vw,32px)">${it.map(x=>E(x[1])).join(' + ')}</div>`,text:[`Tu achètes ${it[0][0]}, ${it[1][0]} et ${it[2][0]}.`,'Combien tu payes en tout ?'],kind:'num',ans:t/100,unit:'€',fmt:x=>D(x,2)+' €',
+ hint:'Additionne les 3 prix. Les virgules l\'une sous l\'autre.',ok:`${it.map(x=>D(x[1]/100,2)).join(' + ')} = ${D(t/100,2)}. Tu payes ${E(t)}.`,
+ ex:['« En tout » : tu additionnes.','Les virgules l\'une sous l\'autre. Tu additionnes de droite à gauche.',`<span class="calc">${it.map(x=>D(x[1]/100,2)).join(' + ')} = ${D(t/100,2)}</span>`,`Tu payes ${E(t)}.`],exHtml:col(it.map((x,i)=>[i?'+':'',x[1]/100]),t/100,2)}};
+const qManque=()=>{const T=pick([1000,5000,10000,100000]),a=R(Math.floor(T/10),T-1);const b=T-a;
+ return{big:`<div class="big">${G(a)} + ? = ${G(T)}</div>`,text:['Il manque un nombre.','Quel nombre faut-il ajouter ?'],kind:'num',ans:b,fmt:G,
+ hint:`Pour trouver le nombre qui manque, tu fais ${G(T)} − ${G(a)}.`,ok:`${G(a)} + ${G(b)} = ${G(T)}`,
+ ex:['Pour trouver le nombre qui manque, tu fais une soustraction.',`<span class="calc">${G(T)} − ${G(a)} = ${G(b)}</span>`,`Tu vérifies : <span class="calc">${G(a)} + ${G(b)} = ${G(T)}</span>`],exHtml:col([['',T],['−',a]],b)}};
+const MEMO1=`<p><b>Additionner 2 nombres entiers</b></p><p>1. Unités sous unités, dizaines sous dizaines…</p><p>2. Tu commences par la droite.</p><p>3. Le total d'une colonne fait 10 ou plus ? Tu écris le chiffre des unités. Tu mets une retenue dans la colonne suivante.</p>${MM.col([['',4587],['+',2639]],7226)}`;
+const MEMO2=`<p><b>Additionner plusieurs nombres</b></p><p>1. Les nombres n'ont pas la même taille ? Aligne bien à droite : unités sous unités.</p><p>2. Tu additionnes toute la colonne. La retenue peut être 2 ou plus.</p><p>3. « En tout », « le total » : c'est une addition.</p>${MM.col([['',12450],['+',3087],['+',968],['+',75]],16580)}`;
+const MEMO3=`<p><b>Additionner des nombres à virgule</b></p><p>1. Les virgules l'une sous l'autre.</p><p>2. Complète avec des 0 : 3,5 = 3,50.</p><p>3. Tu additionnes comme d'habitude. Tu remets la virgule au même endroit.</p>${MM.col([['',3.5],['+',12.25],['+',0.8]],16.55,2)}<p style="margin-top:10px"><b>Le nombre qui manque :</b> 2 400 + ? = 5 000. Tu fais 5 000 − 2 400 = 2 600.</p>`;
+MM.run({code:'N204',title:'J\'additionne plusieurs nombres',
+ desc:['Tu calcules des sommes.','Tu additionnes 2, 3 ou 4 nombres.'],
+ icon:'<svg viewBox="0 0 120 120" role="img" aria-label="Un signe plus"><circle cx="60" cy="60" r="56" fill="var(--lav)"/><path d="M60 30v60M30 60h60" stroke="var(--bag)" stroke-width="14" stroke-linecap="round"/></svg>',
+ memo:`<p><b>Additionner en colonnes :</b></p><p>1. Les unités sous les unités, les dizaines sous les dizaines…</p><p>2. Tu commences par la droite.</p><p>3. Si le total d'une colonne fait 10 ou plus, tu écris le chiffre des unités et tu mets une retenue dans la colonne suivante.</p>${col([['',4587],['+',2639],['+',318]],7544)}<p>Avec des virgules : les virgules l'une sous l'autre.</p>`,
+ levels:[
+ {t:'Niveau 1',memo:MEMO1,s:'La somme de 2 nombres',comp:'N105, phase 1',teach:'somme de deux nombres (jusqu\'à 4 chiffres).',g:[q2,q2,q2b]},
+ {t:'Niveau 2',memo:MEMO2,s:'La somme de 3 ou 4 nombres',comp:'N204, phase 2',teach:'somme de 3 ou 4 nombres de tailles différentes, problèmes « en tout ».',g:[qN(3,100,9999),qN(4,10,9999),qMix,qCtx]},
+ {t:'Niveau 3',memo:MEMO3,s:'Les nombres à virgule et le nombre qui manque',comp:'Q201 / dépassement',teach:'sommes de nombres décimaux et de prix, terme manquant (lien avec la soustraction).',g:[qDec,qPrix,qManque]}]});
+
+}
+</script>
+</body>
+</html>

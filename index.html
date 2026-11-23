@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MathsPass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/style.css">
+<style>
+/* Page d'accueil : une rubrique par domaine de la fiche de compétences, une tuile par application */
+.dom{margin:30px 0 8px}
+.dom h2{display:flex;align-items:center;gap:12px}
+.dom h2 i{width:16px;height:16px;border-radius:50%;flex:none}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin:12px 0}
+.tile{display:flex;flex-direction:column;gap:8px;background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px;text-decoration:none;color:var(--ink)}
+a.tile:hover{border-color:var(--btn)}
+.badge{align-self:flex-start;border-radius:14px;padding:6px 12px;font-weight:700;font-size:18px;line-height:1.2}
+.tile b{font-size:22px;line-height:1.25}
+.tile .d{color:var(--soft);font-size:17px}
+.tile .pg{margin-top:auto;padding-top:8px;border-top:1px solid var(--line);font-size:16px;color:var(--soft);display:flex;align-items:center;gap:8px}
+.lvd{display:flex;gap:4px}.lvd span{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:14px;font-weight:700;background:var(--tint);border:2px solid var(--line);color:var(--soft)}
+.lvd span.ok{background:var(--mint);border-color:#6cc79a;color:var(--mintInk)}
+.soon{border:3px dashed var(--line);border-radius:22px;padding:18px 20px;color:var(--soft)}
+.hero svg{width:100%;height:auto;max-height:230px}
+</style>
+</head>
+<body>
+<main class="wide" id="app"></main>
+<footer class="note">Applications créées par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="shared/engine.js"></script>
+<script>
+{
+const {store,esc,H}=MM,$=s=>document.querySelector(s),app=$('#app');
+const COL={N:['var(--lav)','var(--bag)'],Z:['var(--yel)','#b07a10'],Q:['var(--peach)','var(--coral)'],G:['var(--mint)','var(--mintInk)'],S:['var(--mint)','var(--mintInk)']};
+const DOMS=[
+ {k:'N',t:'Les nombres naturels',d:'Lire, écrire, comparer et calculer avec les nombres entiers.',apps:[
+  {c:'N201',f:'n201',t:'Je lis les grands nombres',d:'Tu lis des nombres avec beaucoup de chiffres.'},
+  {c:'N202',f:'n202',t:'J\'écris les nombres sous la dictée',d:'Tu écoutes un nombre. Tu l\'écris en chiffres.'},
+  {c:'N203',lab:'N203 · Z301',f:'n203',t:'Je compare les nombres',d:'Tu choisis le bon signe : &lt;, &gt; ou =.'},
+  {c:'CLASSEMENT',lab:'N203 · N104 · Q301',f:'classement',t:'Du plus petit au plus grand',d:'Tu compares et tu ranges des nombres et des prix.',old:true},
+  {c:'N204',f:'n204',t:'J\'additionne plusieurs nombres',d:'Tu calcules des sommes de 2, 3 ou 4 nombres.'},
+  {c:'N205',f:'n205',t:'Je soustrais',d:'Tu trouves ce qu\'il reste, ou combien il y a de plus.'},
+  {c:'N206',lab:'N206 · Q303',f:'n206',t:'Je multiplie',d:'Tu multiplies par un nombre à 2 chiffres.'},
+  {c:'N207',f:'n207',t:'Divisible par 2, 5, 10, 100',d:'Tu dis si la division tombe juste.'},
+  {c:'N208',lab:'N208 · N301 · Q306',f:'n208',t:'Je choisis la bonne opération',d:'Tu lis un problème. Tu choisis +, −, × ou :.'},
+  {c:'N209',lab:'N209 · Q307',f:'n209',t:'Je résous des problèmes en plusieurs étapes',d:'Tu fais plusieurs calculs, un après l\'autre.'}]},
+ {k:'Z',t:'Les nombres entiers',d:'Les nombres avec un signe − .',apps:[]},
+ {k:'Q',t:'Les nombres rationnels positifs',d:'Les fractions, les nombres à virgule, les pourcentages.',apps:[
+  {c:'PROMOS',lab:'Q206 · Q207 · Q303 à Q307',f:'promos',t:'Promos et bonnes affaires',d:'Tu calcules les promotions. Tu trouves les bonnes affaires.',old:true}]},
+ {k:'G',t:'La géométrie',d:'Les figures, les droites, les constructions.',apps:[]},
+ {k:'S',t:'Les grandeurs',d:'Les heures, les mesures, les tableaux et les graphiques.',apps:[
+  {c:'LOGIQUE',lab:'S206',f:'logique',t:'Problèmes de logique',d:'Tu lis des indices. Tu remplis un tableau avec des ✓ et des ✗.',old:true}]}];
+const HERO=`<svg viewBox="0 0 340 240" role="img" aria-label="Trois cartes d'applications posées les unes sur les autres">
+ <circle cx="170" cy="122" r="108" fill="var(--lav)"/><ellipse cx="170" cy="218" rx="110" ry="10" fill="var(--line)"/>
+ <g transform="rotate(-10 110 130)"><rect x="50" y="62" width="120" height="140" rx="20" fill="var(--peach)" stroke="var(--coral)" stroke-width="4"/><path d="M80 100h44l18 18-26 26-36-36z" fill="var(--coral)"/></g>
+ <g transform="rotate(10 230 130)"><rect x="170" y="62" width="120" height="140" rx="20" fill="var(--mint)" stroke="#6cc79a" stroke-width="4"/><rect x="198" y="140" width="16" height="36" rx="4" fill="var(--mintInk)"/><rect x="220" y="122" width="16" height="54" rx="4" fill="var(--mintInk)"/><rect x="242" y="100" width="16" height="76" rx="4" fill="var(--mintInk)"/></g>
+ <rect x="110" y="40" width="120" height="150" rx="20" fill="var(--card)" stroke="var(--bag)" stroke-width="4"/>
+ <text x="170" y="100" text-anchor="middle" font-size="30" font-weight="700" fill="var(--ink)" font-family="Atkinson Hyperlegible,Verdana,sans-serif">1 2 3</text>
+ <text x="170" y="150" text-anchor="middle" font-size="30" font-weight="700" fill="var(--bag)" font-family="Atkinson Hyperlegible,Verdana,sans-serif">+ − × :</text>
+ <circle cx="62" cy="48" r="7" fill="#f0b84d"/><circle cx="300" cy="40" r="6" fill="#6cc79a"/><circle cx="48" cy="180" r="5" fill="var(--coral)"/></svg>`;
+function done(c){const L=store.log().filter(r=>r.c===c);return[0,1,2].map(l=>L.some(r=>r.l===l&&r.s>=5))}
+function tile(a,k){const[bg,fg]=COL[k],d=done(a.c),n=d.filter(Boolean).length;
+ return`<a class="tile" href="apps/${a.f}.html${H()}"><span class="badge" style="background:${bg};color:${fg}">${a.lab||a.c}</span><b>${a.t}</b><span class="d">${a.d}</span>
+ <span class="pg"><span class="lvd" aria-hidden="true">${d.map((x,i)=>`<span class="${x?'ok':''}">${i+1}</span>`).join('')}</span>${n?`${n} niveau${n>1?'x':''} réussi${n>1?'s':''}`:'Pas encore commencé'}</span></a>`}
+function hub(){const name=store.name();
+ if(!name){app.innerHTML=`<div class="hero"><div class="intro"><span class="pill">Pour les élèves de C. Antonelli</span><h1>MathsPass</h1><p style="font-size:21px;font-weight:700;color:var(--bag)">Mes applis de maths</p><p>Bonjour !</p><p>Écris ton prénom.</p><p>Tu l'écris une seule fois pour toutes les applications.</p>
+  <form id="nf" style="margin-top:14px"><label class="lbl" for="pn">Ton prénom :</label><input class="name-in" id="pn" maxlength="30" autocomplete="off"><div class="err" id="pe" hidden>Écris ton prénom pour commencer.</div><div class="row" style="margin-top:12px"><button class="btn">C'est parti !</button></div></form></div>${HERO}</div>`;
+  $('#nf').addEventListener('submit',e=>{e.preventDefault();const v=$('#pn').value.trim();if(!v){$('#pe').hidden=false;return}store.setName(v);hub()});$('#pn').focus();return}
+ app.innerHTML=`<div class="bar"><b>Bonjour ${esc(name)} !</b><div class="row"><a class="ghost" href="resultats.html${H()}">Mes résultats</a><button class="ghost" id="chg">Changer d'élève</button></div></div>
+ <div class="hero"><div class="intro"><span class="pill">Pour les élèves de C. Antonelli</span><h1>MathsPass</h1><p style="font-size:21px;font-weight:700;color:var(--bag)">Mes applis de maths</p><p>Tu choisis une application.</p><p>Tu t'entraînes à ton rythme.</p><p>Tes résultats sont gardés au même endroit.</p></div>${HERO}</div>
+ ${DOMS.map(D=>`<section class="dom"><h2><i style="background:${COL[D.k][1]}"></i>${D.t}</h2><p class="note" style="font-size:17px">${D.d}</p><div class="tiles">${D.apps.map(a=>tile(a,D.k)).join('')}${D.apps.length?'':'<div class="soon"><b>Bientôt</b><br>De nouvelles applications arrivent ici.</div>'}</div></section>`).join('')}
+ <div class="box" style="display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;justify-content:space-between"><div style="flex:1 1 380px"><b style="font-size:22px">Tu as fini de travailler ?</b><p style="margin:4px 0 0">Va dans « Mes résultats ». Tu envoies tout à ton professeur en une seule fois.</p></div><a class="btn" href="resultats.html${H()}">Mes résultats</a></div>
+ <details><summary>Pour l'enseignant·e</summary>
+ <p class="note">Le site est rangé comme la fiche de compétences de phase 2 (secteur Eco) : une rubrique par domaine, une application par compétence. Le code de la compétence est écrit sur chaque tuile.</p>
+ <p class="note">Chaque application N201 à N209 a 3 niveaux de 8 questions : niveau 1 = la compétence équivalente de phase 1, niveau 2 = la compétence de phase 2, niveau 3 = dépassement (compétence de phase 3 quand elle existe). Le niveau suivant s'ouvre avec 5 points sur 8. Le détail est dans « Pour l'enseignant·e » de chaque application.</p>
+ <p class="note">Quand le niveau 3 (dépassement) travaille une compétence de phase 3, son code est écrit à côté du code de phase 2 (par exemple N208 · N301 · Q306). Il est aussi envoyé avec les résultats du niveau 3.</p>
+ <p class="note">Sur chaque tuile, les cases 1, 2, 3 deviennent vertes quand l'élève a réussi le niveau (5 points ou plus).</p>
+ <p class="note">Résultats : l'élève écrit son prénom une seule fois. Tous ses niveaux terminés, dans toutes les applications, arrivent dans l'écran « Mes résultats ». Le bouton « Envoyer à mon professeur » ouvre ton formulaire Google déjà rempli, avec le code de chaque compétence.</p>
+ <p class="note">Les résultats sont gardés dans le navigateur de l'appareil. Sur un appareil partagé, l'élève clique sur « Changer d'élève » quand il a fini.</p>
+ <p class="note">Pour ouvrir tous les niveaux de toutes les applications, ajoute #prof à la fin de l'adresse.</p></details>`;
+ $('#chg').addEventListener('click',()=>{app.innerHTML=`<div class="box"><h2>Changer d'élève</h2><div class="warn"><p>Les résultats de <b>${esc(name)}</b> vont être effacés de cet appareil.</p><p>As-tu envoyé tes résultats à ton professeur ?</p><p>Tu veux continuer ?</p></div><div class="row" style="margin-top:14px"><button class="btn" id="wipe">Oui, changer d'élève</button><button class="ghost" id="no">Non</button></div></div>`;
+  $('#wipe').onclick=()=>{store.wipe();hub()};$('#no').onclick=hub;window.scrollTo(0,0)})}
+window.addEventListener('hashchange',hub);
+hub();
+}
+</script>
+</body>
+</html>

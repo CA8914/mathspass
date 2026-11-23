@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N209 · Je résous des problèmes en plusieurs étapes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<main id="app"></main>
+<footer class="note">Application créée par intelligence artificielle (Claude), sur les consignes de C. Antonelli.</footer>
+<script src="../shared/engine.js"></script>
+<script>
+{
+const {R,pick,G,D,E}=MM;
+const C=s=>`<span class="calc">${s}</span>`;
+const P=(text,ans,steps,hint,euro,cents)=>({text,kind:'num',ans,unit:euro?'€':'',fmt:x=>(cents?D(x,2):G(x))+(euro?' €':''),hint,
+ ok:steps[steps.length-1].replace(/^\d+\. /,''),ex:['Il y a plusieurs étapes. Tu fais une étape à la fois.',...steps,`La réponse est ${cents?D(ans,2):G(ans)}${euro?' €':''}.`]});
+/* ---- niveau 1 : 2 étapes, + et − ---- */
+const a1=()=>{const a=R(15,60),b=R(5,40),c=R(5,a+b-5),r=a+b-c;return P([`Tu as ${a} €.`,`Ta tante te donne ${b} €.`,`Puis tu achètes un livre à ${c} €.`,'Combien d\'argent il te reste ?'],r,
+ [`1. Tu reçois : ${C(`${a} + ${b} = ${a+b}`)}`,`2. Tu payes le livre : ${C(`${a+b} − ${c} = ${r}`)}`],'D\'abord, ce que tu reçois (+). Ensuite, ce que tu payes (−).',true)};
+const a2=()=>{const a=R(20,50),b=R(3,a-5),c=R(2,25),r=a-b+c;return P([`Dans un bus, il y a ${a} personnes.`,`Au premier arrêt, ${b} personnes descendent.`,`Puis ${c} personnes montent.`,'Combien de personnes il y a dans le bus maintenant ?'],r,
+ [`1. Des personnes descendent : ${C(`${a} − ${b} = ${a-b}`)}`,`2. Des personnes montent : ${C(`${a-b} + ${c} = ${r}`)}`],'Ceux qui descendent : −. Ceux qui montent : +.')};
+const a3=()=>{const x=R(8,30),y=R(5,30),B=pick([50,100].filter(v=>v>x+y+5)),r=B-x-y;return P([`Tu achètes un ballon à ${x} € et un jeu à ${y} €.`,`Tu payes avec un billet de ${B} €.`,'Combien d\'argent on te rend ?'],r,
+ [`1. Le prix total : ${C(`${x} + ${y} = ${x+y}`)}`,`2. L'argent rendu : ${C(`${B} − ${x+y} = ${r}`)}`],'D\'abord, calcule le prix total. Ensuite, enlève-le du billet.',true)};
+/* ---- niveau 2 : avec × et : ---- */
+const b1=()=>{const n=R(3,9),p=R(2,8),t=R(5,25),r=n*p+t;return P([`Tu achètes ${n} cahiers à ${p} € et une trousse à ${t} €.`,'Combien tu payes en tout ?'],r,
+ [`1. Les cahiers : ${C(`${n} × ${p} = ${n*p}`)}`,`2. Avec la trousse : ${C(`${n*p} + ${t} = ${r}`)}`],'D\'abord, le prix des cahiers (×). Ensuite, ajoute la trousse.',true)};
+const b2=()=>{const n=R(2,6),p=R(7,14),B=pick([50,100].filter(v=>v>n*p)),r=B-n*p;return P([`Tu achètes ${n} places de cinéma à ${p} €.`,`Tu payes avec un billet de ${B} €.`,'Combien d\'argent on te rend ?'],r,
+ [`1. Le prix des places : ${C(`${n} × ${p} = ${n*p}`)}`,`2. L'argent rendu : ${C(`${B} − ${n*p} = ${r}`)}`],'D\'abord, le prix des places. Ensuite, l\'argent rendu.',true)};
+const b3=()=>{const box=R(15,60),g=R(2,5),a=box*6+g;return P([`Un fermier a ${a} œufs.`,`Il garde ${g} œufs pour lui.`,'Il met les autres œufs dans des boîtes de 6.','Combien de boîtes il remplit ?'],box,
+ [`1. Les œufs à mettre en boîtes : ${C(`${a} − ${g} = ${a-g}`)}`,`2. Les boîtes de 6 : ${C(`${a-g} : 6 = ${box}`)}`],'D\'abord, enlève les œufs qu\'il garde. Ensuite, fais des groupes de 6.')};
+const b4=()=>{const n=R(18,28),p=R(4,12),bus=R(150,400),r=n*p+bus;return P([`Une classe de ${n} élèves va au musée.`,`L'entrée coûte ${p} € par élève.`,`Le bus coûte ${bus} €.`,'Combien coûte la sortie en tout ?'],r,
+ [`1. Les entrées : ${C(`${n} × ${p} = ${n*p}`)}`,`2. Avec le bus : ${C(`${n*p} + ${bus} = ${r}`)}`],'D\'abord, le prix des entrées pour tous les élèves. Ensuite, ajoute le bus.',true)};
+/* ---- niveau 3 : nombres à virgule, 3 étapes ---- */
+const c1=()=>{const n=R(2,6),p=R(89,249),m=R(2,4),q=R(99,199),tot=n*p+m*q,B=pick([1000,2000,5000].filter(v=>v>tot)),r=B-tot;
+ return P([`Tu achètes ${n} bouteilles de jus à ${E(p)} et ${m} paquets de chips à ${E(q)}.`,`Tu payes avec un billet de ${B/100} €.`,'Combien d\'argent on te rend ?'],r/100,
+ [`1. Les bouteilles : ${C(`${n} × ${D(p/100,2)} = ${D(n*p/100,2)}`)}`,`2. Les chips : ${C(`${m} × ${D(q/100,2)} = ${D(m*q/100,2)}`)}`,`3. Le total : ${C(`${D(n*p/100,2)} + ${D(m*q/100,2)} = ${D(tot/100,2)}`)}`,`4. L'argent rendu : ${C(`${D(B/100,2)} − ${D(tot/100,2)} = ${D(r/100,2)}`)}`],
+ 'Calcule le prix des bouteilles, puis des chips. Additionne. Enlève du billet.',true,true)};
+const c2=()=>{const k=R(3,6),per=R(450,1200),tot=per*k,n=R(2,4);/* prix des pizzas : total réparti */
+ const p1=Math.round(tot/n/10)*10,last=tot-p1*(n-1);
+ return P([`Avec tes amis, vous êtes ${k} en tout.`,`Vous commandez ${n} pizzas. Le total est de ${E(tot)}.`,'Vous partagez le prix en parts égales.','Combien paye chaque personne ?'],per/100,
+ [`Le total : ${E(tot)}.`,`Tu partages en ${k} parts égales : ${C(`${D(tot/100,2)} : ${k} = ${D(per/100,2)}`)}`],'Partager en parts égales : c\'est une division.',true,true)};
+const c3=()=>{const f=R(899,2499),o=R(150,500),m=R(3,12),r=(f+o)*m;return P([`Un abonnement de téléphone coûte ${E(f)} par mois.`,`Tu ajoutes une option à ${E(o)} par mois.`,`Combien tu payes pour ${m} mois ?`],r/100,
+ [`1. Le prix pour 1 mois : ${C(`${D(f/100,2)} + ${D(o/100,2)} = ${D((f+o)/100,2)}`)}`,`2. Pour ${m} mois : ${C(`${m} × ${D((f+o)/100,2)} = ${D(r/100,2)}`)}`],'D\'abord, le prix pour 1 mois. Ensuite, multiplie par le nombre de mois.',true,true)};
+const c4=()=>{const p=R(1500,4500),pct=pick([10,20,25,50]),k={10:10,20:5,25:4,50:2}[pct],pp=p-p%(k*10),red=pp/k,liv=R(399,699),r=pp-red+liv;
+ return P([`Tu commandes des chaussures sur internet. Le prix est de ${E(pp)}.`,`La réduction est de ${pct} %.`,`La livraison coûte ${E(liv)}.`,'Combien tu payes en tout ?'],r/100,
+ [`1. La réduction : ${pct} %, c'est diviser par ${k}. ${C(`${D(pp/100,2)} : ${k} = ${D(red/100,2)}`)}`,`2. Le nouveau prix : ${C(`${D(pp/100,2)} − ${D(red/100,2)} = ${D((pp-red)/100,2)}`)}`,`3. Avec la livraison : ${C(`${D((pp-red)/100,2)} + ${D(liv/100,2)} = ${D(r/100,2)}`)}`],
+ 'Il y a 3 étapes : la réduction, le nouveau prix, puis la livraison.',true,true)};
+const MEMO1=`<p><b>Un problème en 2 étapes</b></p><p>1. Lis tout le problème. Souligne la question.</p><p>2. Cherche ce que tu dois calculer d'abord.</p><p>3. Fais un calcul à la fois. Écris chaque résultat.</p><p><b>Exemple :</b> Tu as 30 €. Tu reçois 10 €. Tu achètes un livre à 15 €.</p><p>Étape 1 : 30 + 10 = 40. Étape 2 : 40 − 15 = 25. Il te reste 25 €.</p>`;
+const MEMO2=`<p><b>Un problème avec × ou :</b></p><p>1. Plusieurs fois le même prix ? Calcule d'abord avec ×.</p><p>2. Ensuite, ajoute ou enlève.</p><p><b>Exemple :</b> 4 cahiers à 3 € et une trousse à 8 €.</p><p>Étape 1 : 4 × 3 = 12. Étape 2 : 12 + 8 = 20. Tu payes 20 €.</p><p>Relis la question : ta réponse a-t-elle du sens ?</p>`;
+const MEMO3=`<p><b>Les prix avec des centimes</b></p><p>1. Les virgules l'une sous l'autre. 2 chiffres après la virgule : 3,5 € = 3,50 €.</p><p>2. Fais une étape à la fois.</p><table class="memo-t"><tr><td>Une réduction en %</td><td>10 % : tu divises par 10. 20 % : par 5. 25 % : par 4. 50 % : par 2.</td></tr><tr><td>Partager</td><td>Prix total : nombre de personnes.</td></tr><tr><td>Rendre la monnaie</td><td>Billet − prix total.</td></tr></table>`;
+MM.run({code:'N209',title:'Je résous des problèmes en plusieurs étapes',
+ desc:['Tu lis un problème.','Tu fais plusieurs calculs, un après l\'autre.','Tu trouves la réponse.'],
+ icon:'<svg viewBox="0 0 120 120" role="img" aria-label="Un escalier de 3 marches"><circle cx="60" cy="60" r="56" fill="var(--mint)"/><g fill="var(--mintInk)"><rect x="24" y="72" width="22" height="22" rx="5"/><rect x="49" y="52" width="22" height="42" rx="5"/><rect x="74" y="32" width="22" height="62" rx="5"/></g><g fill="var(--card)" font-size="14" font-weight="700" font-family="Atkinson Hyperlegible,Verdana,sans-serif" text-anchor="middle"><text x="35" y="88">1</text><text x="60" y="88">2</text><text x="85" y="88">3</text></g></svg>',
+ memo:`<p><b>Pour résoudre un problème en plusieurs étapes :</b></p><p>1. Lis tout le problème. Souligne la question.</p><p>2. Cherche ce que tu dois calculer d'abord.</p><p>3. Fais un calcul à la fois. Écris chaque résultat.</p><p>4. Utilise le résultat pour l'étape suivante.</p><p>5. Relis la question. Ta réponse a-t-elle du sens ?</p><table class="memo-t"><tr><td>+</td><td>en tout, on reçoit, ils montent</td></tr><tr><td>−</td><td>il reste, on rend, ils descendent</td></tr><tr><td>×</td><td>plusieurs fois le même prix</td></tr><tr><td>:</td><td>partager, faire des groupes</td></tr></table>`,
+ levels:[
+ {t:'Niveau 1',memo:MEMO1,s:'2 étapes avec + et −',comp:'N105, N106, phase 1',teach:'problèmes à 2 étapes (addition et soustraction), petits nombres.',g:[a1,a2,a3]},
+ {t:'Niveau 2',memo:MEMO2,s:'2 étapes avec ×, : , + et −',comp:'N209, phase 2',teach:'problèmes simples où interviennent plusieurs opérations, dont × et :.',g:[b1,b2,b3,b4]},
+ {t:'Niveau 3',memo:MEMO3,p3:'Q307',s:'Les prix avec des centimes, 3 étapes ou plus',comp:'Q307, phase 3',teach:'problèmes à plusieurs opérations avec des nombres décimaux (prix), partage, abonnement, réduction en %.',g:[c1,c2,c3,c4]}]});
+
+}
+</script>
+</body>
+</html>
